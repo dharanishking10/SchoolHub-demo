@@ -11,10 +11,7 @@ import schoolRouter from './routes/school'
 const app = express()
 const PORT = parseInt(process.env.PORT || '3001', 10)
 
-app.use(cors({
-  origin: true,
-  credentials: true,
-}))
+app.use(cors({ origin: true, credentials: true }))
 app.use(express.json())
 
 app.get('/api/health', (_req, res) => res.json({ success: true, message: 'EduGov Connect API running' }))

@@ -39,16 +39,23 @@ model Teacher {
 }
 
 model Student {
-  id         Int      @id @default(autoincrement())
-  fullName   String
-  rollNumber String   @unique
-  className  String
-  section    String   @default("A")
-  gender     String
-  mobile     String?
-  status     String   @default("ACTIVE")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  admissionNumber String?  @unique
+  fullName        String
+  gender          String
+  dateOfBirth     String?
+  fatherName      String?
+  motherName      String?
+  mobile          String?
+  address         String?
+  className       String
+  section         String   @default("A")
+  rollNumber      String   @unique
+  username        String?  @unique
+  password        String?
+  status          String   @default("ACTIVE")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model SchoolClass {

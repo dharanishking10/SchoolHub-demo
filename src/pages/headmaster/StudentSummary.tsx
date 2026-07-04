@@ -16,7 +16,7 @@ export default function StudentSummary() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/students', { headers: { Authorization: `Bearer ${token}` } })
+    fetch('/api/students/stats', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(d => { if (d.success) setData(d.data) })
       .finally(() => setLoading(false))
@@ -53,7 +53,6 @@ export default function StudentSummary() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Gender Chart */}
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }}
               className="bg-white rounded-2xl border border-gov-border shadow-sm p-6">
               <h2 className="text-base font-semibold text-[#0B2447] mb-4">Gender Distribution</h2>
@@ -73,18 +72,17 @@ export default function StudentSummary() {
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-indigo-500" />
                     <span className="text-sm text-gray-600">Boys</span>
-                    <span className="text-sm font-bold text-[#0B2447] ml-auto">{data.boys} ({data.total > 0 ? Math.round(data.boys / data.total * 100) : 0}%)</span>
+                    <span className="text-sm font-bold text-[#0B2447] ml-2">{data.boys} ({data.total > 0 ? Math.round(data.boys / data.total * 100) : 0}%)</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-pink-400" />
                     <span className="text-sm text-gray-600">Girls</span>
-                    <span className="text-sm font-bold text-[#0B2447] ml-auto">{data.girls} ({data.total > 0 ? Math.round(data.girls / data.total * 100) : 0}%)</span>
+                    <span className="text-sm font-bold text-[#0B2447] ml-2">{data.girls} ({data.total > 0 ? Math.round(data.girls / data.total * 100) : 0}%)</span>
                   </div>
                 </div>
               </div>
             </motion.div>
 
-            {/* Class-wise */}
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
               className="bg-white rounded-2xl border border-gov-border shadow-sm p-6">
               <h2 className="text-base font-semibold text-[#0B2447] mb-4">Students by Class</h2>
@@ -102,7 +100,6 @@ export default function StudentSummary() {
             </motion.div>
           </div>
 
-          {/* Attendance Chart */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
             className="bg-white rounded-2xl border border-gov-border shadow-sm p-6">
             <div className="flex items-center gap-2 mb-4">

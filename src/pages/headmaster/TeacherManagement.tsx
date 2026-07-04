@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, Edit2, Trash2, X, Eye, EyeOff, Copy, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Plus, Edit2, Trash2, X, Eye, EyeOff, Copy, CheckCircle, ChevronLeft, ChevronRight, Filter, Download } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
 interface Teacher {
@@ -8,8 +8,9 @@ interface Teacher {
   email?: string; subject: string; username: string; status: string; createdAt: string
 }
 
-const SUBJECTS = ['Mathematics', 'Science', 'Tamil', 'English', 'Social Science', 'Computer Science', 'Physics', 'Chemistry', 'Biology', 'Commerce', 'Economics', 'History']
+const SUBJECTS = ['Mathematics','Science','Tamil','English','Social Science','Computer Science','Physics','Chemistry','Biology','Commerce','Economics','History']
 const EMPTY_FORM = { fullName: '', employeeId: '', mobile: '', email: '', subject: '', username: '', status: 'ACTIVE' }
+const LIMIT = 8
 
 export default function TeacherManagement() {
   const { token } = useAuth()
@@ -17,6 +18,8 @@ export default function TeacherManagement() {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
+  const [filterSubject, setFilterSubject] = useState('')
+  const [filterStatus, setFilterStatus] = useState('')
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState<'create' | 'edit' | 'delete' | null>(null)
   const [selected, setSelected] = useState<Teacher | null>(null)
@@ -26,16 +29,19 @@ export default function TeacherManagement() {
   const [showPass, setShowPass] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
-  const LIMIT = 8
+  const [showFilters, setShowFilters] = useState(false)
 
   const fetchTeachers = useCallback(() => {
     setLoading(true)
-    fetch(`/api/teachers?search=${encodeURIComponent(search)}&page=${page}&limit=${LIMIT}`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(d => { if (d.success) { setTeachers(d.data.teachers); setTotal(d.data.total) } })
+    const params = new URLSearchParams({ search, page: String(page), limit: String(LIMIT) })
+    if (filterSubject) params.append('subject', filterSubject)
+    if (filterStatus) params.append('status', filterStatus)
+    fetch(`/api/teachers?${params}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then(d => { if (d.success) { setTeachers(d.data.teachers); setTotal(d.data.total) } })
       .finally(() => setLoading(false))
-  }, [token, search, page])
+  }, [token, search, page, filterSubject, filterStatus])
 
+  useEffect(() => { setPage(1) }, [search, filterSubject, filterStatus])
   useEffect(() => { fetchTeachers() }, [fetchTeachers])
 
   const openCreate = () => { setForm({ ...EMPTY_FORM }); setGenPassword(''); setError(''); setModal('create') }
@@ -47,8 +53,7 @@ export default function TeacherManagement() {
     if (!form.fullName || !form.employeeId || !form.mobile || !form.subject || !form.username) { setError('Please fill all required fields.'); return }
     setSaving(true); setError('')
     const res = await fetch('/api/teachers', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(form) })
-    const json = await res.json()
-    setSaving(false)
+    const json = await res.json(); setSaving(false)
     if (json.success) { setGenPassword(json.data.generatedPassword); fetchTeachers() }
     else setError(json.message || 'Failed to create teacher')
   }
@@ -57,8 +62,7 @@ export default function TeacherManagement() {
     if (!selected) return
     setSaving(true); setError('')
     const res = await fetch(`/api/teachers/${selected.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(form) })
-    const json = await res.json()
-    setSaving(false)
+    const json = await res.json(); setSaving(false)
     if (json.success) { closeModal(); fetchTeachers() }
     else setError(json.message || 'Failed to update teacher')
   }
@@ -70,8 +74,16 @@ export default function TeacherManagement() {
     setSaving(false); closeModal(); fetchTeachers()
   }
 
-  const copyPass = () => { navigator.clipboard.writeText(genPassword); setCopied(true); setTimeout(() => setCopied(false), 2000) }
+  const exportCSV = () => {
+    const headers = ['Full Name','Employee ID','Subject','Mobile','Email','Username','Status','Joined']
+    const rows = teachers.map(t => [t.fullName, t.employeeId, t.subject, t.mobile, t.email || '', t.username, t.status, new Date(t.createdAt).toLocaleDateString('en-IN')])
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url; a.download = 'teachers.csv'; a.click(); URL.revokeObjectURL(url)
+  }
 
+  const copyPass = () => { navigator.clipboard.writeText(genPassword); setCopied(true); setTimeout(() => setCopied(false), 2000) }
   const totalPages = Math.ceil(total / LIMIT)
 
   const InputField = ({ label, name, type = 'text', required = false, placeholder = '' }: { label: string; name: keyof typeof form; type?: string; required?: boolean; placeholder?: string }) => (
@@ -89,18 +101,49 @@ export default function TeacherManagement() {
           <h1 className="text-2xl font-bold text-[#0B2447]">Teacher Management</h1>
           <p className="text-gray-500 text-sm mt-0.5">{total} teacher{total !== 1 ? 's' : ''} registered</p>
         </div>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2.5 bg-[#0B2447] text-white rounded-xl text-sm font-semibold hover:bg-[#163d6a] transition-colors shadow-sm">
-          <Plus size={16} className="text-secondary" /> Add Teacher
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 bg-white text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm">
+            <Download size={15} className="text-[#0B2447]" /> Export CSV
+          </button>
+          <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2.5 bg-[#0B2447] text-white rounded-xl text-sm font-semibold hover:bg-[#163d6a] transition-colors shadow-sm">
+            <Plus size={16} className="text-secondary" /> Add Teacher
+          </button>
+        </div>
       </motion.div>
 
-      {/* Search */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gov-border p-4 mb-5">
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} placeholder="Search by name, employee ID or subject…"
-            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B2447]/20 focus:border-[#0B2447]" />
+      {/* Search & Filters */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gov-border p-4 mb-5 space-y-3">
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, employee ID, or subject…"
+              className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B2447]/20 focus:border-[#0B2447]" />
+          </div>
+          <button onClick={() => setShowFilters(f => !f)} className={`flex items-center gap-1.5 px-3 py-2.5 border rounded-xl text-sm font-medium transition-colors ${showFilters ? 'bg-[#0B2447] text-white border-[#0B2447]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+            <Filter size={15} /> Filters
+          </button>
         </div>
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="grid grid-cols-1 sm:grid-cols-2 gap-3 overflow-hidden">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Subject</label>
+                <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B2447]/20">
+                  <option value="">All Subjects</option>
+                  {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Status</label>
+                <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B2447]/20">
+                  <option value="">All Status</option>
+                  <option value="ACTIVE">Active</option>
+                  <option value="INACTIVE">Inactive</option>
+                </select>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Table */}
@@ -109,19 +152,17 @@ export default function TeacherManagement() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-[#0B2447] text-white">
-                {['#', 'Name', 'Emp ID', 'Subject', 'Mobile', 'Username', 'Status', 'Actions'].map(h => (
+                {['#','Name','Emp ID','Subject','Mobile','Username','Status','Actions'].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-semibold whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {loading ? (
-                [...Array(5)].map((_, i) => (
-                  <tr key={i} className="border-t border-gray-100">
-                    {[...Array(8)].map((_, j) => <td key={j} className="px-4 py-3"><div className="h-4 bg-gray-100 rounded animate-pulse" /></td>)}
-                  </tr>
-                ))
-              ) : teachers.length === 0 ? (
+              {loading ? [...Array(5)].map((_, i) => (
+                <tr key={i} className="border-t border-gray-100">
+                  {[...Array(8)].map((_, j) => <td key={j} className="px-4 py-3"><div className="h-4 bg-gray-100 rounded animate-pulse" /></td>)}
+                </tr>
+              )) : teachers.length === 0 ? (
                 <tr><td colSpan={8} className="text-center py-12 text-gray-400">No teachers found</td></tr>
               ) : teachers.map((t, i) => (
                 <motion.tr key={t.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}
@@ -133,9 +174,7 @@ export default function TeacherManagement() {
                   <td className="px-4 py-3 text-gray-600">{t.mobile}</td>
                   <td className="px-4 py-3 font-mono text-xs text-gray-600">{t.username}</td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${t.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
-                      {t.status}
-                    </span>
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold ${t.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>{t.status}</span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
@@ -148,23 +187,18 @@ export default function TeacherManagement() {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 bg-gray-50">
             <p className="text-xs text-gray-500">Showing {(page - 1) * LIMIT + 1}–{Math.min(page * LIMIT, total)} of {total}</p>
             <div className="flex items-center gap-1">
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="p-1.5 rounded-lg hover:bg-gray-200 disabled:opacity-40 transition-colors"><ChevronLeft size={16} /></button>
-              {[...Array(totalPages)].map((_, i) => (
-                <button key={i} onClick={() => setPage(i + 1)} className={`w-7 h-7 rounded-lg text-xs font-medium transition-colors ${page === i + 1 ? 'bg-[#0B2447] text-white' : 'hover:bg-gray-200 text-gray-600'}`}>{i + 1}</button>
-              ))}
-              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="p-1.5 rounded-lg hover:bg-gray-200 disabled:opacity-40 transition-colors"><ChevronRight size={16} /></button>
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="p-1.5 rounded-lg hover:bg-gray-200 disabled:opacity-40"><ChevronLeft size={16} /></button>
+              {[...Array(totalPages)].map((_, i) => <button key={i} onClick={() => setPage(i + 1)} className={`w-7 h-7 rounded-lg text-xs font-medium ${page === i + 1 ? 'bg-[#0B2447] text-white' : 'hover:bg-gray-200 text-gray-600'}`}>{i + 1}</button>)}
+              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="p-1.5 rounded-lg hover:bg-gray-200 disabled:opacity-40"><ChevronRight size={16} /></button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Modals */}
       <AnimatePresence>
         {(modal === 'create' || modal === 'edit') && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -174,27 +208,22 @@ export default function TeacherManagement() {
                 <h2 className="text-white font-bold text-lg">{modal === 'create' ? 'Add New Teacher' : 'Edit Teacher'}</h2>
                 <button onClick={closeModal} className="text-white/70 hover:text-white"><X size={20} /></button>
               </div>
-
               {genPassword ? (
                 <div className="p-6">
                   <div className="text-center mb-4">
-                    <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <CheckCircle size={28} className="text-emerald-600" />
-                    </div>
+                    <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3"><CheckCircle size={28} className="text-emerald-600" /></div>
                     <h3 className="font-bold text-gray-800 text-lg">Teacher Created!</h3>
-                    <p className="text-gray-500 text-sm mt-1">Share the auto-generated password securely.</p>
+                    <p className="text-gray-500 text-sm mt-1">Share this auto-generated password securely.</p>
                   </div>
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
                     <p className="text-xs font-semibold text-amber-700 mb-2">Auto-generated Password</p>
                     <div className="flex items-center gap-2">
-                      <code className="flex-1 bg-white border border-amber-200 px-3 py-2 rounded-lg text-sm font-mono text-gray-800">
-                        {showPass ? genPassword : '•'.repeat(genPassword.length)}
-                      </code>
-                      <button onClick={() => setShowPass(s => !s)} className="p-2 rounded-lg hover:bg-amber-100 text-amber-700 transition-colors">{showPass ? <EyeOff size={16} /> : <Eye size={16} />}</button>
-                      <button onClick={copyPass} className="p-2 rounded-lg hover:bg-amber-100 text-amber-700 transition-colors">{copied ? <CheckCircle size={16} className="text-emerald-600" /> : <Copy size={16} />}</button>
+                      <code className="flex-1 bg-white border border-amber-200 px-3 py-2 rounded-lg text-sm font-mono">{showPass ? genPassword : '•'.repeat(genPassword.length)}</code>
+                      <button onClick={() => setShowPass(s => !s)} className="p-2 rounded-lg hover:bg-amber-100 text-amber-700">{showPass ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                      <button onClick={copyPass} className="p-2 rounded-lg hover:bg-amber-100 text-amber-700">{copied ? <CheckCircle size={16} className="text-emerald-600" /> : <Copy size={16} />}</button>
                     </div>
                   </div>
-                  <button onClick={closeModal} className="w-full py-2.5 bg-[#0B2447] text-white rounded-xl font-semibold text-sm hover:bg-[#163d6a] transition-colors">Done</button>
+                  <button onClick={closeModal} className="w-full py-2.5 bg-[#0B2447] text-white rounded-xl font-semibold text-sm hover:bg-[#163d6a]">Done</button>
                 </div>
               ) : (
                 <div className="p-6 space-y-4">
@@ -224,9 +253,9 @@ export default function TeacherManagement() {
                   {modal === 'create' && <p className="text-xs text-gray-400 bg-gray-50 px-3 py-2 rounded-lg">🔐 Password will be auto-generated and shown after creation.</p>}
                   {error && <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
                   <div className="flex gap-3 pt-2">
-                    <button onClick={closeModal} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
+                    <button onClick={closeModal} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
                     <button onClick={modal === 'create' ? handleCreate : handleEdit} disabled={saving}
-                      className="flex-1 py-2.5 bg-[#0B2447] text-white rounded-xl text-sm font-semibold hover:bg-[#163d6a] transition-colors disabled:opacity-60">
+                      className="flex-1 py-2.5 bg-[#0B2447] text-white rounded-xl text-sm font-semibold hover:bg-[#163d6a] disabled:opacity-60">
                       {saving ? 'Saving…' : modal === 'create' ? 'Create Teacher' : 'Save Changes'}
                     </button>
                   </div>
@@ -235,18 +264,14 @@ export default function TeacherManagement() {
             </motion.div>
           </motion.div>
         )}
-
         {modal === 'delete' && selected && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
-              <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Trash2 size={24} className="text-red-500" />
-              </div>
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+              <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><Trash2 size={24} className="text-red-500" /></div>
               <h3 className="font-bold text-gray-800 text-lg mb-1">Delete Teacher?</h3>
-              <p className="text-gray-500 text-sm mb-6">This will permanently remove <span className="font-semibold text-gray-700">{selected.fullName}</span> from the system.</p>
+              <p className="text-gray-500 text-sm mb-6">This will permanently remove <span className="font-semibold text-gray-700">{selected.fullName}</span>.</p>
               <div className="flex gap-3">
-                <button onClick={closeModal} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
+                <button onClick={closeModal} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600">Cancel</button>
                 <button onClick={handleDelete} disabled={saving} className="flex-1 py-2.5 bg-red-500 text-white rounded-xl text-sm font-semibold hover:bg-red-600 disabled:opacity-60">
                   {saving ? 'Deleting…' : 'Delete'}
                 </button>
