@@ -2,10 +2,19 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
-import HeadmasterDashboard from './pages/HeadmasterDashboard'
+import Unauthorized from './pages/Unauthorized'
+
+import HeadmasterLayout from './pages/headmaster/HeadmasterLayout'
+import HMDashboard from './pages/headmaster/HMDashboard'
+import TeacherManagement from './pages/headmaster/TeacherManagement'
+import StudentSummary from './pages/headmaster/StudentSummary'
+import ClassManagement from './pages/headmaster/ClassManagement'
+import Reports from './pages/headmaster/Reports'
+import SchoolProfile from './pages/headmaster/SchoolProfile'
+import HMSettings from './pages/headmaster/HMSettings'
+
 import TeacherDashboard from './pages/TeacherDashboard'
 import StudentDashboard from './pages/StudentDashboard'
-import Unauthorized from './pages/Unauthorized'
 
 function App() {
   return (
@@ -14,14 +23,26 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
+        {/* Headmaster – nested layout */}
         <Route
           path="/dashboard/headmaster"
           element={
             <ProtectedRoute allowedRoles={['HEADMASTER']}>
-              <HeadmasterDashboard />
+              <HeadmasterLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Navigate to="home" replace />} />
+          <Route path="home" element={<HMDashboard />} />
+          <Route path="teachers" element={<TeacherManagement />} />
+          <Route path="students" element={<StudentSummary />} />
+          <Route path="classes" element={<ClassManagement />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="school" element={<SchoolProfile />} />
+          <Route path="settings" element={<HMSettings />} />
+        </Route>
+
+        {/* Teacher */}
         <Route
           path="/dashboard/teacher"
           element={
@@ -30,6 +51,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* Student */}
         <Route
           path="/dashboard/student"
           element={

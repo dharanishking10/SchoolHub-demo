@@ -3,19 +3,15 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    box-sizing: border-box;
-  }
-  body {
-    @apply font-sans antialiased;
-  }
+  * { box-sizing: border-box; }
+  body { @apply font-sans antialiased bg-gov-bg; }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-gov-blue text-white font-semibold py-2.5 px-6 rounded-lg hover:bg-blue-900 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    @apply bg-[#0B2447] text-white font-semibold py-2.5 px-6 rounded-xl hover:bg-[#163d6a] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#0B2447]/40 focus:ring-offset-2;
   }
   .input-field {
-    @apply w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
+    @apply w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0B2447]/30 focus:border-[#0B2447] transition-all duration-200;
   }
 }

@@ -8,21 +8,27 @@ export default {
     extend: {
       colors: {
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
+          DEFAULT: '#0B2447',
+          50: '#e8ecf4',
+          100: '#c5cfdf',
+          200: '#9eb0ca',
+          300: '#7591b4',
+          400: '#507ba4',
+          500: '#2d6595',
+          600: '#1e5080',
+          700: '#163d6a',
+          800: '#0e2b53',
+          900: '#0B2447',
+        },
+        secondary: {
+          DEFAULT: '#D4AF37',
+          light: '#f0d060',
+          dark: '#a88a1a',
         },
         gov: {
-          blue: '#003087',
-          red: '#BF0A30',
-          gold: '#F5A623',
+          bg: '#F5F7FA',
+          border: '#E2E8F0',
+          card: '#FFFFFF',
         }
       },
       fontFamily: {

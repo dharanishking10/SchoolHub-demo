@@ -23,3 +23,58 @@ enum Role {
   TEACHER
   STUDENT
 }
+
+model Teacher {
+  id         Int      @id @default(autoincrement())
+  fullName   String
+  employeeId String   @unique
+  mobile     String
+  email      String?
+  subject    String
+  username   String   @unique
+  password   String
+  status     String   @default("ACTIVE")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Student {
+  id         Int      @id @default(autoincrement())
+  fullName   String
+  rollNumber String   @unique
+  className  String
+  section    String   @default("A")
+  gender     String
+  mobile     String?
+  status     String   @default("ACTIVE")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model SchoolClass {
+  id        Int      @id @default(autoincrement())
+  name      String
+  section   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, section])
+}
+
+model SchoolProfile {
+  id             Int      @id @default(autoincrement())
+  schoolName     String
+  schoolCode     String
+  district       String
+  block          String
+  academicYear   String
+  headmasterName String
+  updatedAt      DateTime @updatedAt
+}
+
+model Activity {
+  id        Int      @id @default(autoincrement())
+  type      String
+  message   String
+  createdAt DateTime @default(now())
+}
