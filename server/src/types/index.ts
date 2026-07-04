@@ -2,6 +2,7 @@ export interface JwtPayload {
   userId: number
   username: string
   role: 'HEADMASTER' | 'TEACHER' | 'STUDENT'
+  name?: string
 }
 
 export interface LoginRequest {

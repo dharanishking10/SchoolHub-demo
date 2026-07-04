@@ -13,8 +13,24 @@ import Reports from './pages/headmaster/Reports'
 import SchoolProfile from './pages/headmaster/SchoolProfile'
 import HMSettings from './pages/headmaster/HMSettings'
 
-import TeacherDashboard from './pages/TeacherDashboard'
-import StudentDashboard from './pages/StudentDashboard'
+import TeacherLayout from './pages/teacher/TeacherLayout'
+import TDashboard from './pages/teacher/TDashboard'
+import TStudents from './pages/teacher/TStudents'
+import TAttendance from './pages/teacher/TAttendance'
+import TMarks from './pages/teacher/TMarks'
+import THomework from './pages/teacher/THomework'
+import TTimetable from './pages/teacher/TTimetable'
+import TLeave from './pages/teacher/TLeave'
+import TProfile from './pages/teacher/TProfile'
+
+import StudentLayout from './pages/student/StudentLayout'
+import SDashboard from './pages/student/SDashboard'
+import SProfile from './pages/student/SProfile'
+import SAttendance from './pages/student/SAttendance'
+import SMarks from './pages/student/SMarks'
+import SHomework from './pages/student/SHomework'
+import STimetable from './pages/student/STimetable'
+import SLeave from './pages/student/SLeave'
 
 function App() {
   return (
@@ -23,14 +39,8 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
-        <Route
-          path="/dashboard/headmaster"
-          element={
-            <ProtectedRoute allowedRoles={['HEADMASTER']}>
-              <HeadmasterLayout />
-            </ProtectedRoute>
-          }
-        >
+        {/* Headmaster */}
+        <Route path="/dashboard/headmaster" element={<ProtectedRoute allowedRoles={['HEADMASTER']}><HeadmasterLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="home" replace />} />
           <Route path="home" element={<HMDashboard />} />
           <Route path="teachers" element={<TeacherManagement />} />
@@ -41,8 +51,30 @@ function App() {
           <Route path="settings" element={<HMSettings />} />
         </Route>
 
-        <Route path="/dashboard/teacher" element={<ProtectedRoute allowedRoles={['TEACHER']}><TeacherDashboard /></ProtectedRoute>} />
-        <Route path="/dashboard/student" element={<ProtectedRoute allowedRoles={['STUDENT']}><StudentDashboard /></ProtectedRoute>} />
+        {/* Teacher */}
+        <Route path="/dashboard/teacher" element={<ProtectedRoute allowedRoles={['TEACHER']}><TeacherLayout /></ProtectedRoute>}>
+          <Route index element={<Navigate to="home" replace />} />
+          <Route path="home" element={<TDashboard />} />
+          <Route path="students" element={<TStudents />} />
+          <Route path="attendance" element={<TAttendance />} />
+          <Route path="marks" element={<TMarks />} />
+          <Route path="homework" element={<THomework />} />
+          <Route path="timetable" element={<TTimetable />} />
+          <Route path="leave" element={<TLeave />} />
+          <Route path="profile" element={<TProfile />} />
+        </Route>
+
+        {/* Student */}
+        <Route path="/dashboard/student" element={<ProtectedRoute allowedRoles={['STUDENT']}><StudentLayout /></ProtectedRoute>}>
+          <Route index element={<Navigate to="home" replace />} />
+          <Route path="home" element={<SDashboard />} />
+          <Route path="profile" element={<SProfile />} />
+          <Route path="attendance" element={<SAttendance />} />
+          <Route path="marks" element={<SMarks />} />
+          <Route path="homework" element={<SHomework />} />
+          <Route path="timetable" element={<STimetable />} />
+          <Route path="leave" element={<SLeave />} />
+        </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />

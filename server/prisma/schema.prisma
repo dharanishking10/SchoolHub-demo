@@ -36,6 +36,9 @@ model Teacher {
   status     String   @default("ACTIVE")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  timetable  Timetable[]
+  homework   Homework[]
 }
 
 model Student {
@@ -56,6 +59,84 @@ model Student {
   status          String   @default("ACTIVE")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  attendance   Attendance[]
+  marks        Marks[]
+  leaveRequests LeaveRequest[]
+}
+
+model Attendance {
+  id        Int      @id @default(autoincrement())
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId Int
+  date      String
+  status    String   // PRESENT, ABSENT, LATE
+  className String
+  section   String
+  markedBy  Int?
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, date])
+}
+
+model Marks {
+  id            Int      @id @default(autoincrement())
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId     Int
+  subject       String
+  examName      String
+  marksObtained Float
+  totalMarks    Float
+  grade         String?
+  markedBy      Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([studentId, subject, examName])
+}
+
+model Homework {
+  id          Int      @id @default(autoincrement())
+  teacher     Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId   Int
+  className   String
+  section     String
+  subject     String
+  title       String
+  description String?
+  dueDate     String
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model LeaveRequest {
+  id             Int      @id @default(autoincrement())
+  student        Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId      Int
+  fromDate       String
+  toDate         String
+  reason         String
+  status         String   @default("PENDING")
+  teacherComment String?
+  reviewedBy     Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Timetable {
+  id        Int     @id @default(autoincrement())
+  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId Int
+  className String
+  section   String
+  day       String
+  period    Int
+  subject   String
+  startTime String
+  endTime   String
+
+  @@unique([className, section, day, period])
 }
 
 model SchoolClass {

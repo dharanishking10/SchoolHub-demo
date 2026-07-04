@@ -64,19 +64,150 @@ async function main() {
     { rollNumber: 'S014', fullName: 'Preethi R', gender: 'FEMALE', dateOfBirth: '2012-03-28', fatherName: 'Ramesh P', motherName: 'Sumathi R', mobile: '9876500014', className: 'IX', section: 'A', address: '56, Vadavalli, Coimbatore' },
     { rollNumber: 'S015', fullName: 'Dinesh K', gender: 'MALE', dateOfBirth: '2013-08-15', fatherName: 'Krishnamurthy D', motherName: 'Rajalakshmi K', mobile: '9876500015', className: 'VIII', section: 'B', address: '89, Podanur, Coimbatore' },
   ]
-
-  const studentPass = await bcrypt.hash('Student@2026', 10)
+  const studentPass = await bcrypt.hash('School@2026', 10)
   let admCount = 0
+  const studentMap: Record<string, number> = {}
   for (const s of studentRecords) {
     admCount++
     const admissionNumber = `ADM2026${String(admCount).padStart(4, '0')}`
     const firstName = s.fullName.split(' ')[0].toLowerCase()
     const username = `${firstName}_${s.rollNumber.toLowerCase()}`
-    await prisma.student.upsert({
+    const stu = await prisma.student.upsert({
       where: { rollNumber: s.rollNumber },
       update: { admissionNumber, username, password: studentPass, dateOfBirth: s.dateOfBirth, fatherName: s.fatherName, motherName: s.motherName, address: s.address, mobile: s.mobile },
       create: { ...s, admissionNumber, username, password: studentPass },
     })
+    studentMap[s.rollNumber] = stu.id
+  }
+
+  // Timetable (Mathematics teacher - EMP001)
+  const mathTeacher = await prisma.teacher.findUnique({ where: { employeeId: 'EMP001' } })
+  const sciTeacher = await prisma.teacher.findUnique({ where: { employeeId: 'EMP002' } })
+  const tamilTeacher = await prisma.teacher.findUnique({ where: { employeeId: 'EMP003' } })
+  const engTeacher = await prisma.teacher.findUnique({ where: { employeeId: 'EMP004' } })
+  const compTeacher = await prisma.teacher.findUnique({ where: { employeeId: 'EMP006' } })
+  const physTeacher = await prisma.teacher.findUnique({ where: { employeeId: 'EMP007' } })
+
+  if (mathTeacher) {
+    const days = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY']
+    const classSchedules = [
+      { className: 'X', section: 'A', periods: [1,3] },
+      { className: 'X', section: 'B', periods: [2,4] },
+      { className: 'IX', section: 'A', periods: [5] },
+    ]
+    const times = ['', '8:00','8:45','9:45','10:30','11:30','12:15']
+    const ends  = ['', '8:45','9:30','10:30','11:15','12:15','1:00']
+    for (const day of days) {
+      for (const cs of classSchedules) {
+        for (const period of cs.periods) {
+          await prisma.timetable.upsert({
+            where: { className_section_day_period: { className: cs.className, section: cs.section, day, period } },
+            update: {},
+            create: { teacherId: mathTeacher.id, className: cs.className, section: cs.section, day, period, subject: 'Mathematics', startTime: times[period], endTime: ends[period] },
+          })
+        }
+      }
+    }
+  }
+
+  if (sciTeacher) {
+    const days = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY']
+    const times = ['', '8:00','8:45','9:45','10:30','11:30','12:15']
+    const ends  = ['', '8:45','9:30','10:30','11:15','12:15','1:00']
+    await prisma.timetable.upsert({ where: { className_section_day_period: { className: 'VIII', section: 'A', day: 'MONDAY', period: 2 } }, update: {}, create: { teacherId: sciTeacher.id, className: 'VIII', section: 'A', day: 'MONDAY', period: 2, subject: 'Science', startTime: times[2], endTime: ends[2] } })
+    await prisma.timetable.upsert({ where: { className_section_day_period: { className: 'VIII', section: 'A', day: 'WEDNESDAY', period: 4 } }, update: {}, create: { teacherId: sciTeacher.id, className: 'VIII', section: 'A', day: 'WEDNESDAY', period: 4, subject: 'Science', startTime: times[4], endTime: ends[4] } })
+    await prisma.timetable.upsert({ where: { className_section_day_period: { className: 'IX', section: 'A', day: 'TUESDAY', period: 1 } }, update: {}, create: { teacherId: sciTeacher.id, className: 'IX', section: 'A', day: 'TUESDAY', period: 1, subject: 'Science', startTime: times[1], endTime: ends[1] } })
+  }
+
+  // Attendance data (past 30 days for X-A students)
+  const xaStudents = studentRecords.filter(s => s.className === 'X' && s.section === 'A')
+  const attStatuses: ('PRESENT'|'ABSENT'|'LATE')[] = ['PRESENT','PRESENT','PRESENT','PRESENT','PRESENT','PRESENT','PRESENT','ABSENT','PRESENT','LATE']
+  const today = new Date()
+  for (let d = 29; d >= 0; d--) {
+    const dt = new Date(today)
+    dt.setDate(today.getDate() - d)
+    const dow = dt.getDay()
+    if (dow === 0 || dow === 6) continue
+    const dateStr = dt.toISOString().split('T')[0]
+    for (const s of xaStudents) {
+      const sid = studentMap[s.rollNumber]
+      if (!sid) continue
+      const randStatus = attStatuses[Math.floor(Math.random() * attStatuses.length)]
+      try {
+        await prisma.attendance.upsert({
+          where: { studentId_date: { studentId: sid, date: dateStr } },
+          update: {},
+          create: { studentId: sid, date: dateStr, status: randStatus, className: 'X', section: 'A' },
+        })
+      } catch {}
+    }
+  }
+
+  // Marks (Unit Test 1 for X-A students)
+  const mathMarks = [
+    { roll: 'S001', obtained: 87 },
+    { roll: 'S002', obtained: 92 },
+    { roll: 'S003', obtained: 78 },
+    { roll: 'S013', obtained: 65 },
+  ]
+  const sciMarks = [
+    { roll: 'S001', obtained: 80 },
+    { roll: 'S002', obtained: 88 },
+    { roll: 'S013', obtained: 72 },
+  ]
+  function grade(obtained: number, total: number): string {
+    const p = (obtained / total) * 100
+    if (p >= 91) return 'A+'; if (p >= 81) return 'A'; if (p >= 71) return 'B+'; if (p >= 61) return 'B'; if (p >= 51) return 'C'; return 'D'
+  }
+  for (const m of mathMarks) {
+    const sid = studentMap[m.roll]; if (!sid) continue
+    await prisma.marks.upsert({ where: { studentId_subject_examName: { studentId: sid, subject: 'Mathematics', examName: 'Unit Test 1' } }, update: {}, create: { studentId: sid, subject: 'Mathematics', examName: 'Unit Test 1', marksObtained: m.obtained, totalMarks: 100, grade: grade(m.obtained, 100) } })
+  }
+  for (const m of sciMarks) {
+    const sid = studentMap[m.roll]; if (!sid) continue
+    await prisma.marks.upsert({ where: { studentId_subject_examName: { studentId: sid, subject: 'Science', examName: 'Unit Test 1' } }, update: {}, create: { studentId: sid, subject: 'Science', examName: 'Unit Test 1', marksObtained: m.obtained, totalMarks: 100, grade: grade(m.obtained, 100) } })
+  }
+  // Half Yearly
+  const halfYearlyMarks = [
+    { roll: 'S001', math: 82, sci: 78, eng: 85, tamil: 79 },
+    { roll: 'S002', math: 90, sci: 88, eng: 91, tamil: 88 },
+  ]
+  for (const m of halfYearlyMarks) {
+    const sid = studentMap[m.roll]; if (!sid) continue
+    const subjects = [['Mathematics', m.math], ['Science', m.sci], ['English', m.eng], ['Tamil', m.tamil]] as [string, number][]
+    for (const [sub, obt] of subjects) {
+      await prisma.marks.upsert({ where: { studentId_subject_examName: { studentId: sid, subject: sub, examName: 'Half Yearly' } }, update: {}, create: { studentId: sid, subject: sub, examName: 'Half Yearly', marksObtained: obt, totalMarks: 100, grade: grade(obt, 100) } })
+    }
+  }
+
+  // Homework
+  if (mathTeacher) {
+    const hwEntries = [
+      { className: 'X', section: 'A', subject: 'Mathematics', title: 'Algebra Practice Set', description: 'Complete exercises 3.1 to 3.5 from Chapter 3 – Polynomial Equations.', dueDate: '2026-07-08', status: 'ACTIVE' },
+      { className: 'X', section: 'B', subject: 'Mathematics', title: 'Geometry – Triangles', description: 'Prove the Pythagoras theorem and solve 5 related problems.', dueDate: '2026-07-06', status: 'ACTIVE' },
+      { className: 'X', section: 'A', subject: 'Mathematics', title: 'Trigonometry Basics', description: 'Learn sin, cos, tan values and complete worksheet 4.', dueDate: '2026-06-30', status: 'CLOSED' },
+    ]
+    for (const hw of hwEntries) {
+      const existing = await prisma.homework.findFirst({ where: { teacherId: mathTeacher.id, title: hw.title } })
+      if (!existing) await prisma.homework.create({ data: { teacherId: mathTeacher.id, ...hw } })
+    }
+  }
+
+  if (sciTeacher) {
+    const existing = await prisma.homework.findFirst({ where: { teacherId: sciTeacher.id, title: 'Living and Non-Living Things' } })
+    if (!existing) {
+      await prisma.homework.create({ data: { teacherId: sciTeacher.id, className: 'VIII', section: 'A', subject: 'Science', title: 'Living and Non-Living Things', description: 'Make a chart listing 10 living and 10 non-living things with their characteristics.', dueDate: '2026-07-09', status: 'ACTIVE' } })
+    }
+  }
+
+  // Leave Requests (from Arjun Kumar, S001)
+  const arjunId = studentMap['S001']
+  if (arjunId) {
+    const existingLeave = await prisma.leaveRequest.findFirst({ where: { studentId: arjunId } })
+    if (!existingLeave) {
+      await prisma.leaveRequest.create({ data: { studentId: arjunId, fromDate: '2026-07-05', toDate: '2026-07-05', reason: 'Family function – attending uncle\'s wedding.', status: 'PENDING' } })
+      await prisma.leaveRequest.create({ data: { studentId: arjunId, fromDate: '2026-06-20', toDate: '2026-06-21', reason: 'Fever and doctor visit.', status: 'APPROVED', teacherComment: 'Approved. Please collect notes from classmates.' } })
+    }
   }
 
   // Activities
@@ -92,7 +223,7 @@ async function main() {
     })
   }
 
-  console.log('✅ Database seeded successfully')
+  console.log('✅ Database seeded successfully (Stage 5 & 6)')
 }
 
 main().catch(e => { console.error(e); process.exit(1) }).finally(() => prisma.$disconnect())

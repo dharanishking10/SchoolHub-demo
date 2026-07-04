@@ -1,0 +1,213 @@
+EduGov Connect – Stage 5 & Stage 6 (Combined)
+
+Continue from the completed Stage 4 project.
+
+Goal:
+Implement a complete Teacher Dashboard and Student Dashboard while preserving all existing functionality.
+
+Do NOT modify or break:
+- Login page
+- Authentication
+- Headmaster Dashboard
+- Teacher Management
+- Student Management
+- Existing APIs
+
+========================================
+STAGE 5 – TEACHER DASHBOARD
+========================================
+
+Create a complete Teacher Dashboard.
+
+Features:
+
+1. Dashboard Home
+- Welcome Teacher
+- Today's Classes
+- Total Students
+- Attendance Summary
+- Pending Tasks
+- Recent Notifications
+
+2. Sidebar
+- Dashboard
+- My Students
+- Attendance
+- Marks
+- Homework
+- Timetable
+- Leave Requests
+- Profile
+- Logout
+
+3. Student List
+- View only students assigned to the teacher
+- Search
+- Filter by Class and Section
+
+4. Attendance Module
+- Mark Present / Absent
+- Update attendance
+- View attendance history
+- Daily attendance report
+
+5. Marks Module
+- Add Marks
+- Edit Marks
+- Delete Marks
+- Subject-wise marks
+- Exam-wise marks
+- Calculate total and percentage automatically
+
+6. Homework Module
+- Create Homework
+- Edit Homework
+- Delete Homework
+- Due Date
+- Attach description
+
+7. Timetable
+- Weekly timetable
+- Subject schedule
+
+8. Leave Requests
+- View student leave requests
+- Approve / Reject
+
+9. Teacher Profile
+- Name
+- Subject
+- Mobile
+- Email
+- Employee ID
+- Change Password
+
+========================================
+STAGE 6 – STUDENT DASHBOARD
+========================================
+
+Create a complete Student Dashboard.
+
+Features:
+
+1. Dashboard Home
+- Welcome Student
+- Attendance Percentage
+- Marks Summary
+- Homework
+- Notifications
+
+2. Sidebar
+- Dashboard
+- My Profile
+- Attendance
+- Marks
+- Homework
+- Timetable
+- Leave Request
+- Logout
+
+3. Attendance Page
+- Monthly attendance
+- Attendance percentage
+- Present/Absent history
+
+4. Marks Page
+- Subject-wise marks
+- Exam results
+- Total
+- Percentage
+- Grade
+
+5. Homework Page
+- Homework list
+- Due dates
+- Status
+
+6. Timetable
+- Daily timetable
+- Weekly timetable
+
+7. Leave Request
+- Apply Leave
+- View Status
+- Cancel Request
+
+8. Student Profile
+- Admission Number
+- Name
+- Class
+- Section
+- Parent Details
+- Contact Number
+
+========================================
+BACKEND
+========================================
+
+Implement required APIs using Express + Prisma.
+
+Create models if needed:
+- Teacher
+- Student
+- Attendance
+- Marks
+- Homework
+- LeaveRequest
+- Timetable
+- Notification
+
+Protect every API using JWT.
+
+Role Permissions:
+
+HEADMASTER
+- Full access
+
+TEACHER
+- Access only assigned students
+- Cannot access Headmaster pages
+
+STUDENT
+- Access only own data
+- Cannot access Teacher or Headmaster pages
+
+========================================
+UI
+========================================
+
+Maintain the Premium Tamil Nadu Government Theme.
+
+Colors:
+Primary: #0B2447
+Secondary: #D4AF37
+Background: #F5F7FA
+
+Use:
+- Tailwind CSS
+- Framer Motion
+- Lucide React
+
+Responsive for:
+- Desktop
+- Tablet
+- Mobile
+
+========================================
+VERIFICATION
+========================================
+
+Before stopping:
+
+✓ npm install succeeds
+✓ npm run dev succeeds
+✓ Backend runs successfully
+✓ Frontend runs successfully
+✓ No TypeScript errors
+✓ No build errors
+✓ All dashboards are accessible according to user role
+✓ Teacher login opens Teacher Dashboard
+✓ Student login opens Student Dashboard
+✓ Headmaster login still opens Headmaster Dashboard
+
+Stop only after everything is fully functional and provide the updated preview URL.
