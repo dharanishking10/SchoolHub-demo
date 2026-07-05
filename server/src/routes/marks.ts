@@ -17,7 +17,12 @@ function calcGrade(obtained: number, total: number): string {
   return 'F'
 }
 
-// GET /api/marks?studentId=&examName=&subject=
+async function teacherOwnsStudent(teacherId: number, studentId: number): Promise<boolean> {
+  const student = await prisma.student.findUnique({ where: { id: studentId }, select: { createdByTeacherId: true } })
+  return student?.createdByTeacherId === teacherId
+}
+
+// GET /api/marks
 router.get('/', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { studentId, examName, subject } = req.query as Record<string, string>
@@ -25,9 +30,20 @@ router.get('/', verifyToken, async (req: AuthRequest, res: Response): Promise<vo
 
     if (req.user!.role === 'STUDENT') {
       where.studentId = req.user!.userId
+    } else if (req.user!.role === 'TEACHER') {
+      // Teacher can only query marks for their own students
+      if (studentId) {
+        const owns = await teacherOwnsStudent(req.user!.userId, parseInt(studentId))
+        if (!owns) { res.status(403).json({ success: false, message: 'You can only view marks for your own students' }); return }
+        where.studentId = parseInt(studentId)
+      } else {
+        // Return marks for all their students
+        where.student = { createdByTeacherId: req.user!.userId }
+      }
     } else if (studentId) {
       where.studentId = parseInt(studentId)
     }
+
     if (examName) where.examName = examName
     if (subject) where.subject = subject
 
@@ -40,11 +56,17 @@ router.get('/', verifyToken, async (req: AuthRequest, res: Response): Promise<vo
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })
 
-// GET /api/marks/summary?studentId=
+// GET /api/marks/summary
 router.get('/summary', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const sid = req.user!.role === 'STUDENT' ? req.user!.userId : parseInt((req.query.studentId as string) || '0')
     if (!sid) { res.status(400).json({ success: false, message: 'studentId required' }); return }
+
+    // Teacher ownership check
+    if (req.user!.role === 'TEACHER') {
+      const owns = await teacherOwnsStudent(req.user!.userId, sid)
+      if (!owns) { res.status(403).json({ success: false, message: 'You can only view marks for your own students' }); return }
+    }
 
     const marks = await prisma.marks.findMany({ where: { studentId: sid }, orderBy: { examName: 'asc' } })
     const exams = [...new Set(marks.map(m => m.examName))]
@@ -64,6 +86,13 @@ router.post('/', verifyToken, async (req: AuthRequest, res: Response): Promise<v
     if (req.user!.role === 'STUDENT') { res.status(403).json({ success: false, message: 'Not allowed' }); return }
     const { studentId, subject, examName, marksObtained, totalMarks } = req.body
     if (!studentId || !subject || !examName || marksObtained === undefined || !totalMarks) { res.status(400).json({ success: false, message: 'All fields required' }); return }
+
+    // Teacher can only add marks for their own students
+    if (req.user!.role === 'TEACHER') {
+      const owns = await teacherOwnsStudent(req.user!.userId, studentId)
+      if (!owns) { res.status(403).json({ success: false, message: 'You can only enter marks for your own students' }); return }
+    }
+
     const grade = calcGrade(marksObtained, totalMarks)
     const mark = await prisma.marks.upsert({
       where: { studentId_subject_examName: { studentId, subject, examName } },
@@ -80,9 +109,18 @@ router.post('/', verifyToken, async (req: AuthRequest, res: Response): Promise<v
 router.put('/:id', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (req.user!.role === 'STUDENT') { res.status(403).json({ success: false, message: 'Not allowed' }); return }
+    const id = parseInt(req.params.id)
+
+    if (req.user!.role === 'TEACHER') {
+      const existing = await prisma.marks.findUnique({ where: { id }, select: { studentId: true } })
+      if (!existing) { res.status(404).json({ success: false, message: 'Not found' }); return }
+      const owns = await teacherOwnsStudent(req.user!.userId, existing.studentId)
+      if (!owns) { res.status(403).json({ success: false, message: 'You can only edit marks for your own students' }); return }
+    }
+
     const { marksObtained, totalMarks } = req.body
     const grade = calcGrade(marksObtained, totalMarks)
-    const mark = await prisma.marks.update({ where: { id: parseInt(req.params.id) }, data: { marksObtained, totalMarks, grade } })
+    const mark = await prisma.marks.update({ where: { id }, data: { marksObtained, totalMarks, grade } })
     res.json({ success: true, data: mark })
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })
@@ -91,7 +129,16 @@ router.put('/:id', verifyToken, async (req: AuthRequest, res: Response): Promise
 router.delete('/:id', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (req.user!.role === 'STUDENT') { res.status(403).json({ success: false, message: 'Not allowed' }); return }
-    await prisma.marks.delete({ where: { id: parseInt(req.params.id) } })
+    const id = parseInt(req.params.id)
+
+    if (req.user!.role === 'TEACHER') {
+      const existing = await prisma.marks.findUnique({ where: { id }, select: { studentId: true } })
+      if (!existing) { res.status(404).json({ success: false, message: 'Not found' }); return }
+      const owns = await teacherOwnsStudent(req.user!.userId, existing.studentId)
+      if (!owns) { res.status(403).json({ success: false, message: 'You can only delete marks for your own students' }); return }
+    }
+
+    await prisma.marks.delete({ where: { id } })
     res.json({ success: true, message: 'Deleted' })
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })

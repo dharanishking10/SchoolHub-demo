@@ -1,6 +1,6 @@
 import { Router, Response } from 'express'
 import { PrismaClient } from '@prisma/client'
-import { verifyToken, AuthRequest } from '../middleware/auth'
+import { verifyToken, requireRole, AuthRequest } from '../middleware/auth'
 
 const router = Router()
 const prisma = new PrismaClient()
@@ -30,8 +30,8 @@ router.get('/', verifyToken, async (req: AuthRequest, res: Response): Promise<vo
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })
 
-// POST /api/timetable (headmaster)
-router.post('/', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
+// POST /api/timetable — HEADMASTER only
+router.post('/', verifyToken, requireRole('HEADMASTER'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { teacherId, className, section, day, period, subject, startTime, endTime } = req.body
     await prisma.timetable.upsert({

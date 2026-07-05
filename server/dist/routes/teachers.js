@@ -15,6 +15,7 @@ function generatePassword(name) {
     const num = Math.floor(10000 + Math.random() * 90000);
     return `${prefix}@${num}`;
 }
+// GET — any authenticated user (Headmaster sees all, Teacher sees all for timetable/context)
 router.get('/', auth_1.verifyToken, async (req, res) => {
     try {
         const { search = '', subject = '', status = '', page = '1', limit = '10' } = req.query;
@@ -43,7 +44,8 @@ router.get('/', auth_1.verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
-router.post('/', auth_1.verifyToken, async (req, res) => {
+// POST — HEADMASTER only
+router.post('/', auth_1.verifyToken, (0, auth_1.requireRole)('HEADMASTER'), async (req, res) => {
     try {
         const { fullName, employeeId, mobile, email, subject, username, status } = req.body;
         if (!fullName || !employeeId || !mobile || !subject || !username) {
@@ -70,7 +72,8 @@ router.post('/', auth_1.verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
-router.put('/:id', auth_1.verifyToken, async (req, res) => {
+// PUT — HEADMASTER only
+router.put('/:id', auth_1.verifyToken, (0, auth_1.requireRole)('HEADMASTER'), async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const { fullName, mobile, email, subject, username, status } = req.body;
@@ -80,13 +83,15 @@ router.put('/:id', auth_1.verifyToken, async (req, res) => {
             select: { id: true, fullName: true, employeeId: true, mobile: true, email: true, subject: true, username: true, status: true },
         });
         await prisma.activity.create({ data: { type: 'teacher', message: `Teacher ${fullName} profile updated` } });
+        await (0, activityLog_1.audit)(req.user.userId, req.user.name || 'User', req.user.role, 'Teacher Updated', `${fullName}`);
         res.json({ success: true, data: { teacher } });
     }
     catch {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
-router.delete('/:id', auth_1.verifyToken, async (req, res) => {
+// DELETE — HEADMASTER only
+router.delete('/:id', auth_1.verifyToken, (0, auth_1.requireRole)('HEADMASTER'), async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const teacher = await prisma.teacher.findUnique({ where: { id } });

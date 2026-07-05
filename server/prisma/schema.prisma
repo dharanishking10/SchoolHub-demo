@@ -37,8 +37,9 @@ model Teacher {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  timetable  Timetable[]
-  homework   Homework[]
+  timetable     Timetable[]
+  homework      Homework[]
+  ownedStudents Student[]   @relation("TeacherStudents")
 }
 
 model Student {
@@ -60,6 +61,8 @@ model Student {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  createdByTeacherId Int?
+  createdByTeacher   Teacher?          @relation("TeacherStudents", fields: [createdByTeacherId], references: [id], onDelete: SetNull)
   attendance        Attendance[]
   marks             Marks[]
   leaveRequests     LeaveRequest[]

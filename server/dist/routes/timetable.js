@@ -37,8 +37,8 @@ router.get('/', auth_1.verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
-// POST /api/timetable (headmaster)
-router.post('/', auth_1.verifyToken, async (req, res) => {
+// POST /api/timetable — HEADMASTER only
+router.post('/', auth_1.verifyToken, (0, auth_1.requireRole)('HEADMASTER'), async (req, res) => {
     try {
         const { teacherId, className, section, day, period, subject, startTime, endTime } = req.body;
         await prisma.timetable.upsert({

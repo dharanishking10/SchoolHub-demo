@@ -6,13 +6,34 @@ const auth_1 = require("../middleware/auth");
 const activityLog_1 = require("../utils/activityLog");
 const router = (0, express_1.Router)();
 const prisma = new client_1.PrismaClient();
-// GET /api/attendance?className=&section=&date= (teacher gets class attendance, student gets own)
+async function teacherOwnsStudent(teacherId, studentId) {
+    const student = await prisma.student.findUnique({ where: { id: studentId }, select: { createdByTeacherId: true } });
+    return student?.createdByTeacherId === teacherId;
+}
+// GET /api/attendance
 router.get('/', auth_1.verifyToken, async (req, res) => {
     try {
         const { className, section, date, studentId } = req.query;
         const where = {};
         if (req.user.role === 'STUDENT') {
             where.studentId = req.user.userId;
+        }
+        else if (req.user.role === 'TEACHER') {
+            // Teacher only sees their own students' attendance
+            where.student = { createdByTeacherId: req.user.userId };
+            if (className)
+                where.className = className;
+            if (section)
+                where.section = section;
+            if (studentId) {
+                const owns = await teacherOwnsStudent(req.user.userId, parseInt(studentId));
+                if (!owns) {
+                    res.status(403).json({ success: false, message: 'Not your student' });
+                    return;
+                }
+                where.studentId = parseInt(studentId);
+                delete where.student;
+            }
         }
         else {
             if (className)
@@ -35,13 +56,20 @@ router.get('/', auth_1.verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
-// GET /api/attendance/summary?studentId= (student gets own, teacher gets any)
+// GET /api/attendance/summary
 router.get('/summary', auth_1.verifyToken, async (req, res) => {
     try {
         const sid = req.user.role === 'STUDENT' ? req.user.userId : parseInt(req.query.studentId || '0');
         if (!sid) {
             res.status(400).json({ success: false, message: 'studentId required' });
             return;
+        }
+        if (req.user.role === 'TEACHER') {
+            const owns = await teacherOwnsStudent(req.user.userId, sid);
+            if (!owns) {
+                res.status(403).json({ success: false, message: 'Not your student' });
+                return;
+            }
         }
         const all = await prisma.attendance.count({ where: { studentId: sid } });
         const present = await prisma.attendance.count({ where: { studentId: sid, status: 'PRESENT' } });
@@ -58,7 +86,7 @@ router.get('/summary', auth_1.verifyToken, async (req, res) => {
     }
 });
 const VALID_STATUSES = ['PRESENT', 'ABSENT', 'LEAVE', 'LATE'];
-// POST /api/attendance — bulk mark (teacher/headmaster)
+// POST /api/attendance — bulk mark
 router.post('/', auth_1.verifyToken, async (req, res) => {
     try {
         if (req.user.role === 'STUDENT') {
@@ -72,8 +100,18 @@ router.post('/', auth_1.verifyToken, async (req, res) => {
         }
         const today = new Date().toISOString().split('T')[0];
         if (req.user.role === 'TEACHER' && date !== today) {
-            res.status(403).json({ success: false, message: 'Teachers can only mark or edit today\'s attendance. Contact the Headmaster to edit past records.' });
+            res.status(403).json({ success: false, message: "Teachers can only mark today's attendance. Contact the Headmaster to edit past records." });
             return;
+        }
+        // Teacher ownership check for all students in the batch
+        if (req.user.role === 'TEACHER') {
+            for (const r of records) {
+                const owns = await teacherOwnsStudent(req.user.userId, r.studentId);
+                if (!owns) {
+                    res.status(403).json({ success: false, message: `Student #${r.studentId} does not belong to you` });
+                    return;
+                }
+            }
         }
         const invalid = records.find(r => !r.studentId || !VALID_STATUSES.includes(r.status));
         if (invalid) {
@@ -96,7 +134,7 @@ router.post('/', auth_1.verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
-// GET /api/attendance/reports?className=&section=&month=&teacherId= (headmaster reports)
+// GET /api/attendance/reports — HEADMASTER only
 router.get('/reports', auth_1.verifyToken, async (req, res) => {
     try {
         if (req.user.role !== 'HEADMASTER') {

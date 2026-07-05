@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
-import { verifyToken, AuthRequest } from '../middleware/auth'
+import { verifyToken, requireRole, AuthRequest } from '../middleware/auth'
 import { notifyAllOfRole, audit } from '../utils/activityLog'
 
 const router = Router()
@@ -13,6 +13,7 @@ function generatePassword(name: string): string {
   return `${prefix}@${num}`
 }
 
+// GET — any authenticated user (Headmaster sees all, Teacher sees all for timetable/context)
 router.get('/', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { search = '', subject = '', status = '', page = '1', limit = '10' } = req.query as Record<string, string>
@@ -36,7 +37,8 @@ router.get('/', verifyToken, async (req: AuthRequest, res: Response): Promise<vo
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }) }
 })
 
-router.post('/', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
+// POST — HEADMASTER only
+router.post('/', verifyToken, requireRole('HEADMASTER'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { fullName, employeeId, mobile, email, subject, username, status } = req.body
     if (!fullName || !employeeId || !mobile || !subject || !username) { res.status(400).json({ success: false, message: 'Required fields missing' }); return }
@@ -57,7 +59,8 @@ router.post('/', verifyToken, async (req: AuthRequest, res: Response): Promise<v
   }
 })
 
-router.put('/:id', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
+// PUT — HEADMASTER only
+router.put('/:id', verifyToken, requireRole('HEADMASTER'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const id = parseInt(req.params.id)
     const { fullName, mobile, email, subject, username, status } = req.body
@@ -67,11 +70,13 @@ router.put('/:id', verifyToken, async (req: AuthRequest, res: Response): Promise
       select: { id: true, fullName: true, employeeId: true, mobile: true, email: true, subject: true, username: true, status: true },
     })
     await prisma.activity.create({ data: { type: 'teacher', message: `Teacher ${fullName} profile updated` } })
+    await audit(req.user!.userId, req.user!.name || 'User', req.user!.role, 'Teacher Updated', `${fullName}`)
     res.json({ success: true, data: { teacher } })
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })
 
-router.delete('/:id', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
+// DELETE — HEADMASTER only
+router.delete('/:id', verifyToken, requireRole('HEADMASTER'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const id = parseInt(req.params.id)
     const teacher = await prisma.teacher.findUnique({ where: { id } })

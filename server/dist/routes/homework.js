@@ -6,7 +6,7 @@ const auth_1 = require("../middleware/auth");
 const activityLog_1 = require("../utils/activityLog");
 const router = (0, express_1.Router)();
 const prisma = new client_1.PrismaClient();
-// GET /api/homework?className=&section=&teacherId=
+// GET /api/homework
 router.get('/', auth_1.verifyToken, async (req, res) => {
     try {
         const { className, section, status } = req.query;
@@ -15,7 +15,6 @@ router.get('/', auth_1.verifyToken, async (req, res) => {
             where.teacherId = req.user.userId;
         }
         else if (req.user.role === 'STUDENT') {
-            // Student sees homework for their class
             const student = await prisma.student.findUnique({ where: { id: req.user.userId }, select: { className: true, section: true } });
             if (student) {
                 where.className = student.className;
@@ -39,10 +38,10 @@ router.get('/', auth_1.verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
-// POST /api/homework
+// POST /api/homework — HEADMASTER or TEACHER
 router.post('/', auth_1.verifyToken, async (req, res) => {
     try {
-        if (req.user.role !== 'TEACHER' && req.user.role !== 'HEADMASTER') {
+        if (req.user.role === 'STUDENT') {
             res.status(403).json({ success: false, message: 'Not allowed' });
             return;
         }
@@ -61,29 +60,53 @@ router.post('/', auth_1.verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
-// PUT /api/homework/:id
+// PUT /api/homework/:id — HEADMASTER can edit all; TEACHER can only edit own
 router.put('/:id', auth_1.verifyToken, async (req, res) => {
     try {
         if (req.user.role === 'STUDENT') {
             res.status(403).json({ success: false, message: 'Not allowed' });
             return;
         }
+        const id = parseInt(req.params.id);
+        if (req.user.role === 'TEACHER') {
+            const existing = await prisma.homework.findUnique({ where: { id }, select: { teacherId: true } });
+            if (!existing) {
+                res.status(404).json({ success: false, message: 'Not found' });
+                return;
+            }
+            if (existing.teacherId !== req.user.userId) {
+                res.status(403).json({ success: false, message: 'You can only edit homework you created' });
+                return;
+            }
+        }
         const { title, description, dueDate, status } = req.body;
-        const hw = await prisma.homework.update({ where: { id: parseInt(req.params.id) }, data: { title, description: description || null, dueDate, status } });
+        const hw = await prisma.homework.update({ where: { id }, data: { title, description: description || null, dueDate, status } });
         res.json({ success: true, data: hw });
     }
     catch {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
-// DELETE /api/homework/:id
+// DELETE /api/homework/:id — HEADMASTER can delete all; TEACHER can only delete own
 router.delete('/:id', auth_1.verifyToken, async (req, res) => {
     try {
         if (req.user.role === 'STUDENT') {
             res.status(403).json({ success: false, message: 'Not allowed' });
             return;
         }
-        await prisma.homework.delete({ where: { id: parseInt(req.params.id) } });
+        const id = parseInt(req.params.id);
+        if (req.user.role === 'TEACHER') {
+            const existing = await prisma.homework.findUnique({ where: { id }, select: { teacherId: true } });
+            if (!existing) {
+                res.status(404).json({ success: false, message: 'Not found' });
+                return;
+            }
+            if (existing.teacherId !== req.user.userId) {
+                res.status(403).json({ success: false, message: 'You can only delete homework you created' });
+                return;
+            }
+        }
+        await prisma.homework.delete({ where: { id } });
         res.json({ success: true, message: 'Deleted' });
     }
     catch {

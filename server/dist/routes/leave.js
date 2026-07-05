@@ -6,13 +6,23 @@ const auth_1 = require("../middleware/auth");
 const activityLog_1 = require("../utils/activityLog");
 const router = (0, express_1.Router)();
 const prisma = new client_1.PrismaClient();
-// GET /api/leave?status=
+async function teacherOwnsStudent(teacherId, studentId) {
+    const student = await prisma.student.findUnique({ where: { id: studentId }, select: { createdByTeacherId: true } });
+    return student?.createdByTeacherId === teacherId;
+}
+// GET /api/leave
 router.get('/', auth_1.verifyToken, async (req, res) => {
     try {
         const { status } = req.query;
         const where = {};
-        if (req.user.role === 'STUDENT')
+        if (req.user.role === 'STUDENT') {
             where.studentId = req.user.userId;
+        }
+        else if (req.user.role === 'TEACHER') {
+            // Teacher only sees leave requests for their own students
+            where.student = { createdByTeacherId: req.user.userId };
+        }
+        // HEADMASTER sees all
         if (status)
             where.status = status;
         const requests = await prisma.leaveRequest.findMany({
@@ -26,7 +36,7 @@ router.get('/', auth_1.verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
-// POST /api/leave (student applies)
+// POST /api/leave — student applies
 router.post('/', auth_1.verifyToken, async (req, res) => {
     try {
         if (req.user.role !== 'STUDENT') {
@@ -46,16 +56,30 @@ router.post('/', auth_1.verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
-// PUT /api/leave/:id (teacher approves/rejects)
+// PUT /api/leave/:id — teacher or headmaster approves/rejects
 router.put('/:id', auth_1.verifyToken, async (req, res) => {
     try {
         if (req.user.role === 'STUDENT') {
             res.status(403).json({ success: false, message: 'Not allowed' });
             return;
         }
+        const leaveId = parseInt(req.params.id);
+        const existing = await prisma.leaveRequest.findUnique({ where: { id: leaveId } });
+        if (!existing) {
+            res.status(404).json({ success: false, message: 'Not found' });
+            return;
+        }
+        // Teacher can only review leave for their own students
+        if (req.user.role === 'TEACHER') {
+            const owns = await teacherOwnsStudent(req.user.userId, existing.studentId);
+            if (!owns) {
+                res.status(403).json({ success: false, message: 'You can only review leave for your own students' });
+                return;
+            }
+        }
         const { status, teacherComment } = req.body;
         const updated = await prisma.leaveRequest.update({
-            where: { id: parseInt(req.params.id) },
+            where: { id: leaveId },
             data: { status, teacherComment: teacherComment || null, reviewedBy: req.user.userId },
         });
         await (0, activityLog_1.notify)(updated.studentId, 'STUDENT', 'leave', `Leave Request ${status === 'APPROVED' ? 'Approved' : 'Rejected'}`, `Your leave request (${updated.fromDate} to ${updated.toDate}) was ${status?.toLowerCase()}.`);
@@ -66,20 +90,26 @@ router.put('/:id', auth_1.verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
-// DELETE /api/leave/:id (student cancels pending)
+// DELETE /api/leave/:id — student cancels own pending; HEADMASTER can cancel any pending
 router.delete('/:id', auth_1.verifyToken, async (req, res) => {
     try {
-        const req_ = await prisma.leaveRequest.findUnique({ where: { id: parseInt(req.params.id) } });
-        if (!req_) {
+        // Teachers cannot delete leave requests — they approve/reject only (PUT)
+        if (req.user.role === 'TEACHER') {
+            res.status(403).json({ success: false, message: 'Teachers cannot delete leave requests. Use approve/reject instead.' });
+            return;
+        }
+        const leaveReq = await prisma.leaveRequest.findUnique({ where: { id: parseInt(req.params.id) } });
+        if (!leaveReq) {
             res.status(404).json({ success: false, message: 'Not found' });
             return;
         }
-        if (req.user.role === 'STUDENT' && req_.studentId !== req.user.userId) {
-            res.status(403).json({ success: false, message: 'Not allowed' });
+        // Student can only cancel their own
+        if (req.user.role === 'STUDENT' && leaveReq.studentId !== req.user.userId) {
+            res.status(403).json({ success: false, message: 'You can only cancel your own leave requests' });
             return;
         }
-        if (req_.status !== 'PENDING') {
-            res.status(400).json({ success: false, message: 'Cannot cancel processed request' });
+        if (leaveReq.status !== 'PENDING') {
+            res.status(400).json({ success: false, message: 'Cannot cancel a request that has already been processed' });
             return;
         }
         await prisma.leaveRequest.delete({ where: { id: parseInt(req.params.id) } });

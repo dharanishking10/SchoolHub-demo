@@ -24,15 +24,24 @@ function generatePassword(fullName: string, dob: string): string {
   return `${name}@${year}`
 }
 
+// Helper: check if a teacher owns a student
+async function teacherOwnsStudent(teacherId: number, studentId: number): Promise<boolean> {
+  const student = await prisma.student.findUnique({ where: { id: studentId }, select: { createdByTeacherId: true } })
+  return student?.createdByTeacherId === teacherId
+}
+
 // GET /api/students/stats
-router.get('/stats', verifyToken, async (_req: AuthRequest, res: Response): Promise<void> => {
+router.get('/stats', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const isTeacher = req.user!.role === 'TEACHER'
+    const teacherFilter = isTeacher ? { createdByTeacherId: req.user!.userId } : {}
+
     const [total, boys, girls, byClass, recent] = await Promise.all([
-      prisma.student.count(),
-      prisma.student.count({ where: { gender: 'MALE' } }),
-      prisma.student.count({ where: { gender: 'FEMALE' } }),
-      prisma.student.groupBy({ by: ['className'], _count: { id: true }, orderBy: { className: 'asc' } }),
-      prisma.student.findMany({ orderBy: { createdAt: 'desc' }, take: 5, select: { id: true, admissionNumber: true, fullName: true, className: true, section: true, gender: true, createdAt: true } }),
+      prisma.student.count({ where: teacherFilter }),
+      prisma.student.count({ where: { ...teacherFilter, gender: 'MALE' } }),
+      prisma.student.count({ where: { ...teacherFilter, gender: 'FEMALE' } }),
+      prisma.student.groupBy({ by: ['className'], where: teacherFilter, _count: { id: true }, orderBy: { className: 'asc' } }),
+      prisma.student.findMany({ where: teacherFilter, orderBy: { createdAt: 'desc' }, take: 5, select: { id: true, admissionNumber: true, fullName: true, className: true, section: true, gender: true, createdAt: true } }),
     ])
     const attendance = [82, 88, 91, 85, 79, 93, 87, 90, 84, 88, 76, 92]
     const months = ['Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May']
@@ -40,12 +49,24 @@ router.get('/stats', verifyToken, async (_req: AuthRequest, res: Response): Prom
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })
 
-// GET /api/students — list with search/filter/pagination
+// GET /api/students
 router.get('/', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { search = '', className = '', section = '', status = '', page = '1', limit = '10' } = req.query as Record<string, string>
     const skip = (parseInt(page) - 1) * parseInt(limit)
+
     const where: Record<string, unknown> = {}
+
+    // Role-based scoping
+    if (req.user!.role === 'STUDENT') {
+      // Students can only see themselves
+      where.id = req.user!.userId
+    } else if (req.user!.role === 'TEACHER') {
+      // Teachers see only students they created
+      where.createdByTeacherId = req.user!.userId
+    }
+    // HEADMASTER sees all
+
     if (className) where.className = className
     if (section) where.section = section
     if (status) where.status = status
@@ -57,25 +78,35 @@ router.get('/', verifyToken, async (req: AuthRequest, res: Response): Promise<vo
         { fatherName: { contains: search, mode: 'insensitive' } },
       ]
     }
+
     const [students, total] = await Promise.all([
-      prisma.student.findMany({ where, skip, take: parseInt(limit), orderBy: { createdAt: 'desc' }, select: { id: true, admissionNumber: true, fullName: true, gender: true, dateOfBirth: true, fatherName: true, motherName: true, mobile: true, address: true, className: true, section: true, rollNumber: true, username: true, status: true, createdAt: true } }),
+      prisma.student.findMany({
+        where, skip, take: parseInt(limit), orderBy: { createdAt: 'desc' },
+        select: { id: true, admissionNumber: true, fullName: true, gender: true, dateOfBirth: true, fatherName: true, motherName: true, mobile: true, address: true, className: true, section: true, rollNumber: true, username: true, status: true, createdAt: true, createdByTeacherId: true, createdByTeacher: { select: { fullName: true } } },
+      }),
       prisma.student.count({ where }),
     ])
     res.json({ success: true, data: { students, total, page: parseInt(page), limit: parseInt(limit) } })
   } catch (e) { console.error(e); res.status(500).json({ success: false, message: 'Server error' }) }
 })
 
-// POST /api/students
+// POST /api/students — HEADMASTER or TEACHER
 router.post('/', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (req.user!.role === 'STUDENT') { res.status(403).json({ success: false, message: 'Not allowed' }); return }
     const { fullName, gender, dateOfBirth, fatherName, motherName, mobile, address, className, section, rollNumber, status } = req.body
     if (!fullName || !gender || !className || !section || !rollNumber) { res.status(400).json({ success: false, message: 'Required fields missing' }); return }
+
     const admissionNumber = await generateAdmissionNumber()
     const username = generateUsername(fullName, rollNumber)
     const plainPassword = generatePassword(fullName, dateOfBirth || '')
     const hashed = await bcrypt.hash(plainPassword, 10)
+
+    // If teacher creates, assign ownership
+    const createdByTeacherId = req.user!.role === 'TEACHER' ? req.user!.userId : null
+
     const student = await prisma.student.create({
-      data: { admissionNumber, fullName, gender, dateOfBirth: dateOfBirth || null, fatherName: fatherName || null, motherName: motherName || null, mobile: mobile || null, address: address || null, className, section, rollNumber, username, password: hashed, status: status || 'ACTIVE' },
+      data: { admissionNumber, fullName, gender, dateOfBirth: dateOfBirth || null, fatherName: fatherName || null, motherName: motherName || null, mobile: mobile || null, address: address || null, className, section, rollNumber, username, password: hashed, status: status || 'ACTIVE', createdByTeacherId },
       select: { id: true, admissionNumber: true, fullName: true, gender: true, className: true, section: true, rollNumber: true, username: true, status: true, createdAt: true },
     })
     await prisma.activity.create({ data: { type: 'student', message: `New student ${fullName} admitted (${admissionNumber})` } })
@@ -92,7 +123,15 @@ router.post('/', verifyToken, async (req: AuthRequest, res: Response): Promise<v
 // PUT /api/students/:id
 router.put('/:id', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (req.user!.role === 'STUDENT') { res.status(403).json({ success: false, message: 'Not allowed' }); return }
     const id = parseInt(req.params.id)
+
+    // Teacher can only edit their own students
+    if (req.user!.role === 'TEACHER') {
+      const owns = await teacherOwnsStudent(req.user!.userId, id)
+      if (!owns) { res.status(403).json({ success: false, message: 'You can only edit students you created' }); return }
+    }
+
     const { fullName, gender, dateOfBirth, fatherName, motherName, mobile, address, className, section, rollNumber, status } = req.body
     const student = await prisma.student.update({
       where: { id },
@@ -100,6 +139,7 @@ router.put('/:id', verifyToken, async (req: AuthRequest, res: Response): Promise
       select: { id: true, admissionNumber: true, fullName: true, gender: true, className: true, section: true, rollNumber: true, username: true, status: true },
     })
     await prisma.activity.create({ data: { type: 'student', message: `Student ${fullName} profile updated` } })
+    await audit(req.user!.userId, req.user!.name || 'User', req.user!.role, 'Student Updated', `${fullName}`)
     res.json({ success: true, data: { student } })
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })
@@ -107,7 +147,15 @@ router.put('/:id', verifyToken, async (req: AuthRequest, res: Response): Promise
 // DELETE /api/students/:id
 router.delete('/:id', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    if (req.user!.role === 'STUDENT') { res.status(403).json({ success: false, message: 'Not allowed' }); return }
     const id = parseInt(req.params.id)
+
+    // Teacher can only delete their own students
+    if (req.user!.role === 'TEACHER') {
+      const owns = await teacherOwnsStudent(req.user!.userId, id)
+      if (!owns) { res.status(403).json({ success: false, message: 'You can only delete students you created' }); return }
+    }
+
     const student = await prisma.student.findUnique({ where: { id } })
     if (!student) { res.status(404).json({ success: false, message: 'Student not found' }); return }
     await prisma.student.delete({ where: { id } })
