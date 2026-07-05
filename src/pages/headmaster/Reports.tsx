@@ -31,7 +31,7 @@ export default function Reports() {
   useEffect(() => {
     Promise.all([
       fetch('/api/dashboard/stats', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch('/api/students', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+      fetch('/api/students/stats', { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
     ]).then(([d1, d2]) => {
       if (d1.success) setStats(d1.data)
       if (d2.success) setStudentData(d2.data)
