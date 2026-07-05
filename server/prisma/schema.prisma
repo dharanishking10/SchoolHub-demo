@@ -60,9 +60,10 @@ model Student {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  attendance   Attendance[]
-  marks        Marks[]
-  leaveRequests LeaveRequest[]
+  attendance        Attendance[]
+  marks             Marks[]
+  leaveRequests     LeaveRequest[]
+  governmentSchemes GovernmentScheme[]
 }
 
 model Attendance {
@@ -153,11 +154,34 @@ model SchoolProfile {
   id             Int      @id @default(autoincrement())
   schoolName     String
   schoolCode     String
+  emisCode       String   @default("")
+  udiseCode      String   @default("")
+  address        String   @default("")
   district       String
   block          String
-  academicYear   String
+  panchayat      String   @default("")
+  pinCode        String   @default("")
+  contactNumber  String   @default("")
+  email          String   @default("")
   headmasterName String
+  logoUrl        String   @default("")
+  academicYear   String
   updatedAt      DateTime @updatedAt
+}
+
+model GovernmentScheme {
+  id               Int      @id @default(autoincrement())
+  student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId        Int
+  className        String
+  section          String
+  academicYear     String
+  schemeName       String
+  distributionDate String   @default("")
+  status           String   @default("PENDING")
+  remarks          String   @default("")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model Activity {

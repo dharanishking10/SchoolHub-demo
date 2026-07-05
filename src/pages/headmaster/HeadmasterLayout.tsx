@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Users, GraduationCap, BookOpen,
   BarChart2, School, Settings, LogOut, Menu, X, ChevronRight,
-  ClipboardCheck, Megaphone, Download, History
+  ClipboardCheck, Megaphone, Download, History, Gift
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import NotificationBell from '../../components/NotificationBell'
@@ -21,6 +21,7 @@ const NAV = [
   { to: '/dashboard/headmaster/export-center', icon: Download, label: 'Export Center' },
   { to: '/dashboard/headmaster/audit-log', icon: History, label: 'Audit Log' },
   { to: '/dashboard/headmaster/school', icon: School, label: 'School Profile' },
+  { to: '/dashboard/headmaster/schemes', icon: Gift, label: 'Government Schemes' },
   { to: '/dashboard/headmaster/settings', icon: Settings, label: 'Settings' },
 ]
 

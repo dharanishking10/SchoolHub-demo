@@ -17,6 +17,7 @@ import announcementsRouter from './routes/announcements'
 import auditLogRouter from './routes/auditlog'
 import searchRouter from './routes/search'
 import exportRouter from './routes/export'
+import schemesRouter from './routes/schemes'
 
 const app = express()
 const PORT = parseInt(process.env.PORT || '3001', 10)
@@ -41,5 +42,6 @@ app.use('/api/announcements', announcementsRouter)
 app.use('/api/audit-log', auditLogRouter)
 app.use('/api/search', searchRouter)
 app.use('/api/export', exportRouter)
+app.use('/api/schemes', schemesRouter)
 
 app.listen(PORT, '0.0.0.0', () => console.log(`🚀 EduGov Connect API on port ${PORT}`))

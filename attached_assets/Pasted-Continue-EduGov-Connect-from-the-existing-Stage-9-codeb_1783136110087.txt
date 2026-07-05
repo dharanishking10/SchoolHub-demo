@@ -1,0 +1,139 @@
+Continue EduGov Connect from the existing Stage 9 codebase.
+
+IMPORTANT
+
+Read the entire existing project before making any changes.
+
+Stages 1–9 are already completed.
+
+Do NOT recreate the project.
+
+Do NOT redesign the UI.
+
+Do NOT replace the Premium Tamil Nadu Government landing page.
+
+The landing page MUST remain exactly as it is with:
+
+• Headmaster
+• Teacher
+• Student
+
+Do NOT replace it with a single login page.
+
+Maintain all existing authentication, routing, dashboards, attendance, homework, marks, notifications, announcements, reports, audit logs, and exports.
+
+Implement ONLY Stage 10A.
+
+====================================================
+1. SCHOOL PROFILE MANAGEMENT
+====================================================
+
+Create a complete School Profile module.
+
+Allow only the Headmaster to manage:
+
+• School Name
+• School Code
+• EMIS Code
+• UDISE+ Code
+• Address
+• District
+• Block
+• Panchayat
+• PIN Code
+• Contact Number
+• Email
+• Headmaster Name
+• School Logo Upload
+• Academic Year
+
+Features:
+
+• Add
+• Edit
+• Save
+• Validation
+• Database persistence
+• Logo upload
+• Responsive UI
+
+====================================================
+2. GOVERNMENT SCHEME MANAGEMENT
+====================================================
+
+Create a Government Schemes module.
+
+Schemes:
+
+• Free Uniform
+• Free Textbook
+• Free Notebook
+• Free Bicycle
+• Free Laptop
+• Scholarship
+
+Fields:
+
+• Student
+• Class
+• Section
+• Academic Year
+• Distribution Date
+• Status
+• Remarks
+
+Features:
+
+• Add
+• Edit
+• Delete
+• Search
+• Filter
+• CSV Export
+
+====================================================
+BUG FIXES
+====================================================
+
+While implementing:
+
+• Fix input focus issues.
+• Fix validation issues.
+• Do NOT break existing CRUD.
+• Maintain responsive UI.
+
+====================================================
+FINAL VERIFICATION
+====================================================
+
+Run:
+
+npm install
+
+npm run build
+
+Fix every TypeScript error.
+
+Fix every build error.
+
+Verify:
+
+✓ Premium Tamil Nadu Government landing page still exists.
+
+✓ Three role cards still exist.
+
+✓ Headmaster Login works.
+
+✓ Teacher Login works.
+
+✓ Student Login works.
+
+✓ School Profile works.
+
+✓ Government Schemes work.
+
+Provide a detailed Stage 10A completion report.
+
+STOP after Stage 10A.
+
+Do NOT continue to Stage 10B automatically.

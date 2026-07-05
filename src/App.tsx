@@ -11,6 +11,7 @@ import StudentManagement from './pages/headmaster/StudentManagement'
 import ClassManagement from './pages/headmaster/ClassManagement'
 import Reports from './pages/headmaster/Reports'
 import SchoolProfile from './pages/headmaster/SchoolProfile'
+import GovernmentSchemes from './pages/headmaster/GovernmentSchemes'
 import HMSettings from './pages/headmaster/HMSettings'
 import AttendanceReports from './pages/headmaster/AttendanceReports'
 import HMAnnouncements from './pages/headmaster/Announcements'
@@ -58,6 +59,7 @@ function App() {
           <Route path="export-center" element={<ExportCenter />} />
           <Route path="audit-log" element={<AuditLog />} />
           <Route path="school" element={<SchoolProfile />} />
+          <Route path="schemes" element={<GovernmentSchemes />} />
           <Route path="settings" element={<HMSettings />} />
         </Route>
 

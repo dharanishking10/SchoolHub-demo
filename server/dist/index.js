@@ -22,6 +22,7 @@ const announcements_1 = __importDefault(require("./routes/announcements"));
 const auditlog_1 = __importDefault(require("./routes/auditlog"));
 const search_1 = __importDefault(require("./routes/search"));
 const export_1 = __importDefault(require("./routes/export"));
+const schemes_1 = __importDefault(require("./routes/schemes"));
 const app = (0, express_1.default)();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 app.use((0, cors_1.default)({ origin: true, credentials: true }));
@@ -43,5 +44,6 @@ app.use('/api/announcements', announcements_1.default);
 app.use('/api/audit-log', auditlog_1.default);
 app.use('/api/search', search_1.default);
 app.use('/api/export', export_1.default);
+app.use('/api/schemes', schemes_1.default);
 app.listen(PORT, '0.0.0.0', () => console.log(`🚀 EduGov Connect API on port ${PORT}`));
 //# sourceMappingURL=index.js.map
