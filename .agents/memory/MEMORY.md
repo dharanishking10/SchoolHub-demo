@@ -1,3 +1,4 @@
 - [EduGov Connect conventions](edugov-connect-conventions.md) — CSV-only export, notify/audit hook pattern, JWT-based session security approach
 - [Timetable module](timetable-module.md) — full CRUD complete; schema patched via db push (not migrate dev); student scope gap pattern to watch
 - [Academic promotion](academic-promotion.md) — atomic Prisma interactive transaction with in-tx concurrency guard; sequential promotions are valid; UI type-to-confirm guards
+- [Examination & Marks module](exam-marks-module.md) — parallel Exam/Subject/Mark system coexists with legacy Marks; publish lifecycle gates teacher edits and student visibility

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" fill="none">
+  <!-- Outer decorative ring -->
+  <circle cx="100" cy="110" r="96" fill="#1a3a6b" stroke="#D4AF37" stroke-width="3"/>
+  <circle cx="100" cy="110" r="90" fill="none" stroke="#D4AF37" stroke-width="1" stroke-dasharray="4 3"/>
+
+  <!-- Temple base platform -->
+  <rect x="40" y="170" width="120" height="10" rx="2" fill="#D4AF37"/>
+  <rect x="50" y="160" width="100" height="12" rx="2" fill="#c9a227"/>
+  <rect x="55" y="152" width="90" height="10" rx="2" fill="#D4AF37"/>
+
+  <!-- Temple columns -->
+  <rect x="58" y="120" width="10" height="34" rx="1" fill="#D4AF37"/>
+  <rect x="75" y="120" width="10" height="34" rx="1" fill="#D4AF37"/>
+  <rect x="115" y="120" width="10" height="34" rx="1" fill="#D4AF37"/>
+  <rect x="132" y="120" width="10" height="34" rx="1" fill="#D4AF37"/>
+
+  <!-- Temple door/entrance -->
+  <rect x="85" y="128" width="30" height="26" rx="2" fill="#0B2447"/>
+  <path d="M85 128 Q100 118 115 128" fill="#c9a227"/>
+
+  <!-- Gopuram tiers - bottom to top, getting narrower -->
+  <!-- Tier 1 -->
+  <rect x="52" y="108" width="96" height="14" rx="2" fill="#c9a227"/>
+  <rect x="54" y="109" width="92" height="12" rx="1" fill="#D4AF37"/>
+
+  <!-- Tier 2 -->
+  <rect x="60" y="96" width="80" height="14" rx="2" fill="#c9a227"/>
+  <rect x="62" y="97" width="76" height="12" rx="1" fill="#D4AF37"/>
+
+  <!-- Small decorative figures on tier 2 -->
+  <circle cx="72" cy="100" r="3" fill="#1a3a6b"/>
+  <circle cx="100" cy="100" r="3" fill="#1a3a6b"/>
+  <circle cx="128" cy="100" r="3" fill="#1a3a6b"/>
+
+  <!-- Tier 3 -->
+  <rect x="68" y="84" width="64" height="14" rx="2" fill="#c9a227"/>
+  <rect x="70" y="85" width="60" height="12" rx="1" fill="#D4AF37"/>
+
+  <!-- Small decorative figures on tier 3 -->
+  <circle cx="80" cy="88" r="3" fill="#1a3a6b"/>
+  <circle cx="100" cy="88" r="3" fill="#1a3a6b"/>
+  <circle cx="120" cy="88" r="3" fill="#1a3a6b"/>
+
+  <!-- Tier 4 -->
+  <rect x="76" y="72" width="48" height="14" rx="2" fill="#c9a227"/>
+  <rect x="78" y="73" width="44" height="12" rx="1" fill="#D4AF37"/>
+
+  <!-- Tier 5 -->
+  <rect x="82" y="62" width="36" height="12" rx="2" fill="#c9a227"/>
+  <rect x="84" y="63" width="32" height="10" rx="1" fill="#D4AF37"/>
+
+  <!-- Tier 6 -->
+  <rect x="87" y="53" width="26" height="11" rx="2" fill="#c9a227"/>
+  <rect x="89" y="54" width="22" height="9" rx="1" fill="#D4AF37"/>
+
+  <!-- Tier 7 -->
+  <rect x="91" y="45" width="18" height="10" rx="2" fill="#c9a227"/>
+  <rect x="93" y="46" width="14" height="8" rx="1" fill="#D4AF37"/>
+
+  <!-- Kalasam (Finial) -->
+  <ellipse cx="100" cy="38" rx="5" ry="7" fill="#D4AF37"/>
+  <circle cx="100" cy="30" r="3.5" fill="#D4AF37"/>
+  <line x1="100" y1="26" x2="100" y2="18" stroke="#D4AF37" stroke-width="2"/>
+  <circle cx="100" cy="17" r="4" fill="#D4AF37"/>
+  <!-- Flag/pennant on top -->
+  <path d="M100 13 L110 9 L100 5" fill="#D4AF37"/>
+
+  <!-- Decorative stars / dots around temple -->
+  <circle cx="55" cy="108" r="2" fill="#fff" opacity="0.6"/>
+  <circle cx="145" cy="108" r="2" fill="#fff" opacity="0.6"/>
+  <circle cx="60" cy="96" r="2" fill="#fff" opacity="0.5"/>
+  <circle cx="140" cy="96" r="2" fill="#fff" opacity="0.5"/>
+
+  <!-- Tamil Nadu text at bottom -->
+  <text x="100" y="202" text-anchor="middle" font-family="serif" font-size="11" font-weight="bold" fill="#D4AF37" letter-spacing="2">தமிழ்நாடு</text>
+  <text x="100" y="216" text-anchor="middle" font-family="serif" font-size="9" font-weight="bold" fill="#D4AF37" letter-spacing="3">TAMIL NADU</text>
+
+  <!-- Decorative divider lines -->
+  <line x1="48" y1="194" x2="152" y2="194" stroke="#D4AF37" stroke-width="0.8" opacity="0.6"/>
+  <line x1="55" y1="196" x2="145" y2="196" stroke="#D4AF37" stroke-width="0.4" opacity="0.4"/>
+</svg>

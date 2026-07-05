@@ -70,6 +70,7 @@ model Student {
   createdByTeacher   Teacher?          @relation("TeacherStudents", fields: [createdByTeacherId], references: [id], onDelete: SetNull)
   attendance        Attendance[]
   marks             Marks[]
+  examMarks         Mark[]
   leaveRequests     LeaveRequest[]
   governmentSchemes GovernmentScheme[]
 }
@@ -102,6 +103,51 @@ model Marks {
   updatedAt     DateTime @updatedAt
 
   @@unique([studentId, subject, examName])
+}
+
+model Exam {
+  id           Int      @id @default(autoincrement())
+  examName     String
+  examType     String   @default("Unit Test 1")
+  academicYear String   @default("2025-2026")
+  startDate    String
+  endDate      String
+  status       String   @default("DRAFT") // DRAFT | PUBLISHED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  marks Mark[]
+
+  @@unique([examName, academicYear])
+}
+
+model Subject {
+  id          Int    @id @default(autoincrement())
+  subjectName String
+  subjectCode String @unique
+
+  marks Mark[]
+}
+
+model Mark {
+  id            Int      @id @default(autoincrement())
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId     Int
+  className     String
+  section       String
+  subject       Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId     Int
+  exam          Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  examId        Int
+  marksObtained Float
+  maximumMarks  Float    @default(100)
+  grade         String?
+  remarks       String?
+  enteredBy     Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([studentId, subjectId, examId])
 }
 
 model Homework {

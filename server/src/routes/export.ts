@@ -65,6 +65,25 @@ router.get('/homework', verifyToken, async (req: AuthRequest, res: Response): Pr
   sendCsv(res, 'homework.csv', hw.map(h => ({ title: h.title, subject: h.subject, className: h.className, section: h.section, teacher: h.teacher.fullName, dueDate: h.dueDate, status: h.status })))
 })
 
+// GET /api/export/exam-marks?examId=
+router.get('/exam-marks', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  if (req.user!.role === 'STUDENT') { res.status(403).json({ success: false, message: 'Not allowed' }); return }
+  const { examId } = req.query as Record<string, string>
+  const where: Record<string, unknown> = {}
+  if (examId) where.examId = parseInt(examId)
+  if (req.user!.role === 'TEACHER') where.student = { createdByTeacherId: req.user!.userId }
+  const marks = await prisma.mark.findMany({
+    where,
+    include: { student: { select: { fullName: true, rollNumber: true, admissionNumber: true, className: true, section: true } }, subject: true, exam: true },
+    orderBy: [{ studentId: 'asc' }, { subjectId: 'asc' }],
+  })
+  sendCsv(res, 'exam-marks.csv', marks.map(m => ({
+    admissionNumber: m.student.admissionNumber, rollNumber: m.student.rollNumber, name: m.student.fullName,
+    className: m.className, section: m.section, exam: m.exam.examName, subject: m.subject.subjectName,
+    marksObtained: m.marksObtained, maximumMarks: m.maximumMarks, grade: m.grade,
+  })))
+})
+
 // GET /api/export/reports (school-wide summary)
 router.get('/reports', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   if (req.user!.role !== 'HEADMASTER') { res.status(403).json({ success: false, message: 'Not allowed' }); return }

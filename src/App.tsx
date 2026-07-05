@@ -20,6 +20,7 @@ import AuditLog from './pages/headmaster/AuditLog'
 import ExportCenter from './pages/headmaster/ExportCenter'
 import HMTimetable from './pages/headmaster/HMTimetable'
 import AcademicPromotion from './pages/headmaster/AcademicPromotion'
+import Examinations from './pages/headmaster/Examinations'
 
 import TeacherLayout from './pages/teacher/TeacherLayout'
 import TDashboard from './pages/teacher/TDashboard'
@@ -27,6 +28,7 @@ import TClasses from './pages/teacher/TClasses'
 import TStudents from './pages/teacher/TStudents'
 import TAttendance from './pages/teacher/TAttendance'
 import TMarks from './pages/teacher/TMarks'
+import TExamMarks from './pages/teacher/TExamMarks'
 import THomework from './pages/teacher/THomework'
 import TTimetable from './pages/teacher/TTimetable'
 import TLeave from './pages/teacher/TLeave'
@@ -39,6 +41,7 @@ import SClass from './pages/student/SClass'
 import SProfile from './pages/student/SProfile'
 import SAttendance from './pages/student/SAttendance'
 import SMarks from './pages/student/SMarks'
+import SResults from './pages/student/SResults'
 import SHomework from './pages/student/SHomework'
 import STimetable from './pages/student/STimetable'
 import SLeave from './pages/student/SLeave'
@@ -64,6 +67,7 @@ function App() {
           <Route path="export-center" element={<ExportCenter />} />
           <Route path="timetable" element={<HMTimetable />} />
           <Route path="promotion" element={<AcademicPromotion />} />
+          <Route path="examinations" element={<Examinations />} />
           <Route path="audit-log" element={<AuditLog />} />
           <Route path="school" element={<SchoolProfile />} />
           <Route path="schemes" element={<GovernmentSchemes />} />
@@ -78,6 +82,7 @@ function App() {
           <Route path="students" element={<TStudents />} />
           <Route path="attendance" element={<TAttendance />} />
           <Route path="marks" element={<TMarks />} />
+          <Route path="exam-marks" element={<TExamMarks />} />
           <Route path="homework" element={<THomework />} />
           <Route path="timetable" element={<TTimetable />} />
           <Route path="leave" element={<TLeave />} />
@@ -93,6 +98,7 @@ function App() {
           <Route path="profile" element={<SProfile />} />
           <Route path="attendance" element={<SAttendance />} />
           <Route path="marks" element={<SMarks />} />
+          <Route path="results" element={<SResults />} />
           <Route path="homework" element={<SHomework />} />
           <Route path="timetable" element={<STimetable />} />
           <Route path="leave" element={<SLeave />} />
