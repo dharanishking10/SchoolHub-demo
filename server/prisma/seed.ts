@@ -28,7 +28,11 @@ async function main() {
     { name: 'XII', section: 'A' }, { name: 'XII', section: 'B' },
   ]
   for (const cls of classes) {
-    await prisma.schoolClass.upsert({ where: { name_section: cls }, update: {}, create: cls })
+    await prisma.schoolClass.upsert({
+      where: { name_section_academicYear: { ...cls, academicYear: '2025-2026' } },
+      update: {},
+      create: { ...cls, academicYear: '2025-2026' },
+    })
   }
 
   // Teachers

@@ -5,7 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.signToken = exports.requireRole = exports.verifyToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const JWT_SECRET = process.env.JWT_SECRET || 'edugov-connect-jwt-secret-2026-stage2';
+const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET;
+if (!JWT_SECRET) {
+    console.error('FATAL: JWT_SECRET or SESSION_SECRET environment variable is required');
+    process.exit(1);
+}
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;

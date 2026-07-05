@@ -2,7 +2,11 @@ import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { JwtPayload } from '../types'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'edugov-connect-jwt-secret-2026-stage2'
+const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET
+if (!JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET or SESSION_SECRET environment variable is required')
+  process.exit(1)
+}
 
 export interface AuthRequest extends Request {
   user?: JwtPayload
