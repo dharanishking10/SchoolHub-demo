@@ -3,6 +3,18 @@ import { motion } from 'framer-motion'
 import { Settings, Shield, Bell, Monitor, CheckCircle } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
+const Toggle = ({ label, desc, checked, onChange }: { label: string; desc: string; checked: boolean; onChange: () => void }) => (
+  <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+    <div>
+      <p className="text-sm font-medium text-gray-800">{label}</p>
+      <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+    </div>
+    <button onClick={onChange} className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${checked ? 'bg-[#0B2447]' : 'bg-gray-200'}`}>
+      <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
+    </button>
+  </div>
+)
+
 export default function HMSettings() {
   const { user } = useAuth()
   const [notifications, setNotifications] = useState({ email: true, sms: false, app: true })
@@ -12,18 +24,6 @@ export default function HMSettings() {
     setSaved(true)
     setTimeout(() => setSaved(false), 2500)
   }
-
-  const Toggle = ({ label, desc, checked, onChange }: { label: string; desc: string; checked: boolean; onChange: () => void }) => (
-    <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-      <div>
-        <p className="text-sm font-medium text-gray-800">{label}</p>
-        <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
-      </div>
-      <button onClick={onChange} className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${checked ? 'bg-[#0B2447]' : 'bg-gray-200'}`}>
-        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
-      </button>
-    </div>
-  )
 
   const sections = [
     {

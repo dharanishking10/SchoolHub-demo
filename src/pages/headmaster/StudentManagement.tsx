@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, type Dispatch, type SetStateAction } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Plus, Edit2, Trash2, X, Eye, EyeOff, Copy, CheckCircle, ChevronLeft, ChevronRight, Filter, Download } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
@@ -14,6 +14,32 @@ const CLASSES = ['VI','VII','VIII','IX','X','XI','XII']
 const SECTIONS = ['A','B']
 const EMPTY_FORM = { fullName: '', gender: 'MALE', dateOfBirth: '', fatherName: '', motherName: '', mobile: '', address: '', className: 'VI', section: 'A', rollNumber: '', status: 'ACTIVE' }
 const LIMIT = 10
+
+type StudentFormData = typeof EMPTY_FORM
+
+const Field = ({ label, name, type = 'text', required = false, placeholder = '', form, setForm }: {
+  label: string; name: keyof StudentFormData; type?: string; required?: boolean; placeholder?: string
+  form: StudentFormData; setForm: Dispatch<SetStateAction<StudentFormData>>
+}) => (
+  <div>
+    <label className="block text-xs font-semibold text-gray-600 mb-1">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>
+    <input type={type} value={form[name] as string} onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))} placeholder={placeholder}
+      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B2447]/30 focus:border-[#0B2447]" />
+  </div>
+)
+
+const Select = ({ label, name, options, required = false, form, setForm }: {
+  label: string; name: keyof StudentFormData; options: { value: string; label: string }[]; required?: boolean
+  form: StudentFormData; setForm: Dispatch<SetStateAction<StudentFormData>>
+}) => (
+  <div>
+    <label className="block text-xs font-semibold text-gray-600 mb-1">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>
+    <select value={form[name] as string} onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))}
+      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B2447]/30 focus:border-[#0B2447]">
+      {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
+  </div>
+)
 
 export default function StudentManagement() {
   const { token } = useAuth()
@@ -93,24 +119,6 @@ export default function StudentManagement() {
 
   const copyText = (text: string) => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000) }
   const totalPages = Math.ceil(total / LIMIT)
-
-  const Field = ({ label, name, type = 'text', required = false, placeholder = '' }: { label: string; name: keyof typeof form; type?: string; required?: boolean; placeholder?: string }) => (
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>
-      <input type={type} value={form[name] as string} onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))} placeholder={placeholder}
-        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B2447]/30 focus:border-[#0B2447]" />
-    </div>
-  )
-
-  const Select = ({ label, name, options, required = false }: { label: string; name: keyof typeof form; options: { value: string; label: string }[]; required?: boolean }) => (
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>
-      <select value={form[name] as string} onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))}
-        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B2447]/30 focus:border-[#0B2447]">
-        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
-    </div>
-  )
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -291,9 +299,9 @@ export default function StudentManagement() {
                     <span className="w-5 h-5 bg-[#0B2447] text-white rounded-full flex items-center justify-center text-xs">1</span> Basic Information
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-                    <div className="sm:col-span-2"><Field label="Full Name" name="fullName" required placeholder="e.g. Arjun Kumar" /></div>
-                    <Select label="Gender" name="gender" required options={[{ value: 'MALE', label: 'Male' }, { value: 'FEMALE', label: 'Female' }]} />
-                    <Field label="Date of Birth" name="dateOfBirth" type="date" />
+                    <div className="sm:col-span-2"><Field label="Full Name" name="fullName" required placeholder="e.g. Arjun Kumar" form={form} setForm={setForm} /></div>
+                    <Select label="Gender" name="gender" required options={[{ value: 'MALE', label: 'Male' }, { value: 'FEMALE', label: 'Female' }]} form={form} setForm={setForm} />
+                    <Field label="Date of Birth" name="dateOfBirth" type="date" form={form} setForm={setForm} />
                   </div>
 
                   {/* Parent Info */}
@@ -301,9 +309,9 @@ export default function StudentManagement() {
                     <span className="w-5 h-5 bg-[#0B2447] text-white rounded-full flex items-center justify-center text-xs">2</span> Parent Information
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-                    <Field label="Father Name" name="fatherName" placeholder="Father's full name" />
-                    <Field label="Mother Name" name="motherName" placeholder="Mother's full name" />
-                    <Field label="Mobile Number" name="mobile" type="tel" placeholder="9876543210" />
+                    <Field label="Father Name" name="fatherName" placeholder="Father's full name" form={form} setForm={setForm} />
+                    <Field label="Mother Name" name="motherName" placeholder="Mother's full name" form={form} setForm={setForm} />
+                    <Field label="Mobile Number" name="mobile" type="tel" placeholder="9876543210" form={form} setForm={setForm} />
                     <div className="sm:col-span-1">
                       <label className="block text-xs font-semibold text-gray-600 mb-1">Address</label>
                       <textarea value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} placeholder="Full address" rows={2}
@@ -316,10 +324,10 @@ export default function StudentManagement() {
                     <span className="w-5 h-5 bg-[#0B2447] text-white rounded-full flex items-center justify-center text-xs">3</span> Academic Details
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-                    <Select label="Class" name="className" required options={CLASSES.map(c => ({ value: c, label: `Std ${c}` }))} />
-                    <Select label="Section" name="section" required options={SECTIONS.map(s => ({ value: s, label: `Section ${s}` }))} />
-                    <Field label="Roll Number" name="rollNumber" required placeholder="e.g. S016" />
-                    <Select label="Status" name="status" options={[{ value: 'ACTIVE', label: 'Active' }, { value: 'INACTIVE', label: 'Inactive' }]} />
+                    <Select label="Class" name="className" required options={CLASSES.map(c => ({ value: c, label: `Std ${c}` }))} form={form} setForm={setForm} />
+                    <Select label="Section" name="section" required options={SECTIONS.map(s => ({ value: s, label: `Section ${s}` }))} form={form} setForm={setForm} />
+                    <Field label="Roll Number" name="rollNumber" required placeholder="e.g. S016" form={form} setForm={setForm} />
+                    <Select label="Status" name="status" options={[{ value: 'ACTIVE', label: 'Active' }, { value: 'INACTIVE', label: 'Inactive' }]} form={form} setForm={setForm} />
                   </div>
 
                   {modal === 'create' && <p className="text-xs text-gray-400 bg-gray-50 px-3 py-2 rounded-lg mb-4">🔐 Username and password will be auto-generated and shown after admission.</p>}

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, type Dispatch, type SetStateAction } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Edit2, Trash2, X, CheckCircle } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
@@ -7,6 +7,19 @@ interface HW { id: number; className: string; section: string; subject: string; 
 const CLASSES = ['VI','VII','VIII','IX','X','XI','XII']
 const SECTIONS = ['A','B']
 const EMPTY = { className: 'X', section: 'A', subject: '', title: '', description: '', dueDate: '', status: 'ACTIVE' }
+
+type HWFormData = typeof EMPTY
+
+const Field = ({ label, name, type = 'text', required = false, form, setForm }: {
+  label: string; name: keyof HWFormData; type?: string; required?: boolean
+  form: HWFormData; setForm: Dispatch<SetStateAction<HWFormData>>
+}) => (
+  <div>
+    <label className="block text-xs font-semibold text-gray-600 mb-1">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>
+    <input type={type} value={form[name] as string} onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))}
+      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B2447]/30" />
+  </div>
+)
 
 export default function THomework() {
   const { token } = useAuth()
@@ -53,14 +66,6 @@ export default function THomework() {
     await fetch(`/api/homework/${selected.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
     setSaving(false); closeModal(); fetchHW()
   }
-
-  const Field = ({ label, name, type = 'text', required = false }: { label: string; name: keyof typeof form; type?: string; required?: boolean }) => (
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>
-      <input type={type} value={form[name] as string} onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))}
-        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B2447]/30" />
-    </div>
-  )
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -125,15 +130,15 @@ export default function THomework() {
                     </select>
                   </div>
                 </div>
-                <Field label="Subject" name="subject" required />
-                <Field label="Title" name="title" required />
+                <Field label="Subject" name="subject" required form={form} setForm={setForm} />
+                <Field label="Title" name="title" required form={form} setForm={setForm} />
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1">Description</label>
                   <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={3}
                     className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none resize-none" placeholder="Optional description…" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Due Date" name="dueDate" type="date" required />
+                  <Field label="Due Date" name="dueDate" type="date" required form={form} setForm={setForm} />
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 mb-1">Status</label>
                     <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none">

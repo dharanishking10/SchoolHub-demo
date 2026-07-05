@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, type Dispatch, type SetStateAction } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Plus, Edit2, Trash2, X, Eye, EyeOff, Copy, CheckCircle, ChevronLeft, ChevronRight, Filter, UserPlus, AlertCircle } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
@@ -19,6 +19,82 @@ const EMPTY_FORM = {
 const LIMIT = 10
 
 const inputCls = 'w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1A4D8F]/30 focus:border-[#1A4D8F] transition-all'
+
+type TStudentFormData = typeof EMPTY_FORM
+
+const StudentForm = ({ form, setForm, error }: {
+  form: TStudentFormData
+  setForm: Dispatch<SetStateAction<TStudentFormData>>
+  error: string
+}) => {
+  const set = (k: keyof TStudentFormData) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    setForm(f => ({ ...f, [k]: e.target.value }))
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="col-span-2">
+          <label className="block text-xs font-bold text-gray-600 mb-1.5">Full Name <span className="text-red-500">*</span></label>
+          <input type="text" value={form.fullName} onChange={set('fullName')} placeholder="e.g. Arjun Kumar" className={inputCls} />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-gray-600 mb-1.5">Gender <span className="text-red-500">*</span></label>
+          <select value={form.gender} onChange={set('gender')} className={inputCls}>
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-gray-600 mb-1.5">Date of Birth</label>
+          <input type="date" value={form.dateOfBirth} onChange={set('dateOfBirth')} className={inputCls} />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-gray-600 mb-1.5">Class <span className="text-red-500">*</span></label>
+          <select value={form.className} onChange={set('className')} className={inputCls}>
+            {CLASSES.map(c => <option key={c} value={c}>Std {c}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-gray-600 mb-1.5">Section <span className="text-red-500">*</span></label>
+          <select value={form.section} onChange={set('section')} className={inputCls}>
+            {SECTIONS.map(s => <option key={s} value={s}>Section {s}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-gray-600 mb-1.5">Roll Number <span className="text-red-500">*</span></label>
+          <input type="text" value={form.rollNumber} onChange={set('rollNumber')} placeholder="e.g. S016" className={inputCls} />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-gray-600 mb-1.5">Status</label>
+          <select value={form.status} onChange={set('status')} className={inputCls}>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-gray-600 mb-1.5">Father's Name</label>
+          <input type="text" value={form.fatherName} onChange={set('fatherName')} placeholder="e.g. Kumar Raj" className={inputCls} />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-gray-600 mb-1.5">Mother's Name</label>
+          <input type="text" value={form.motherName} onChange={set('motherName')} placeholder="e.g. Priya Kumar" className={inputCls} />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-gray-600 mb-1.5">Mobile</label>
+          <input type="tel" value={form.mobile} onChange={set('mobile')} placeholder="10-digit number" className={inputCls} />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-xs font-bold text-gray-600 mb-1.5">Address</label>
+          <input type="text" value={form.address} onChange={set('address')} placeholder="Full address" className={inputCls} />
+        </div>
+      </div>
+      {error && (
+        <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
+          <AlertCircle size={15} className="shrink-0 mt-0.5" /> {error}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function TStudents() {
   const { token } = useAuth()
@@ -102,72 +178,6 @@ export default function TStudents() {
   }
 
   const totalPages = Math.ceil(total / LIMIT)
-
-  const StudentForm = () => (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <div className="col-span-2">
-          <label className="block text-xs font-bold text-gray-600 mb-1.5">Full Name <span className="text-red-500">*</span></label>
-          <input type="text" value={form.fullName} onChange={set('fullName')} placeholder="e.g. Arjun Kumar" className={inputCls} />
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-gray-600 mb-1.5">Gender <span className="text-red-500">*</span></label>
-          <select value={form.gender} onChange={set('gender')} className={inputCls}>
-            <option value="MALE">Male</option>
-            <option value="FEMALE">Female</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-gray-600 mb-1.5">Date of Birth</label>
-          <input type="date" value={form.dateOfBirth} onChange={set('dateOfBirth')} className={inputCls} />
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-gray-600 mb-1.5">Class <span className="text-red-500">*</span></label>
-          <select value={form.className} onChange={set('className')} className={inputCls}>
-            {CLASSES.map(c => <option key={c} value={c}>Std {c}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-gray-600 mb-1.5">Section <span className="text-red-500">*</span></label>
-          <select value={form.section} onChange={set('section')} className={inputCls}>
-            {SECTIONS.map(s => <option key={s} value={s}>Section {s}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-gray-600 mb-1.5">Roll Number <span className="text-red-500">*</span></label>
-          <input type="text" value={form.rollNumber} onChange={set('rollNumber')} placeholder="e.g. S016" className={inputCls} />
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-gray-600 mb-1.5">Status</label>
-          <select value={form.status} onChange={set('status')} className={inputCls}>
-            <option value="ACTIVE">Active</option>
-            <option value="INACTIVE">Inactive</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-gray-600 mb-1.5">Father's Name</label>
-          <input type="text" value={form.fatherName} onChange={set('fatherName')} placeholder="e.g. Kumar Raj" className={inputCls} />
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-gray-600 mb-1.5">Mother's Name</label>
-          <input type="text" value={form.motherName} onChange={set('motherName')} placeholder="e.g. Priya Kumar" className={inputCls} />
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-gray-600 mb-1.5">Mobile</label>
-          <input type="tel" value={form.mobile} onChange={set('mobile')} placeholder="10-digit number" className={inputCls} />
-        </div>
-        <div className="col-span-2">
-          <label className="block text-xs font-bold text-gray-600 mb-1.5">Address</label>
-          <input type="text" value={form.address} onChange={set('address')} placeholder="Full address" className={inputCls} />
-        </div>
-      </div>
-      {error && (
-        <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
-          <AlertCircle size={15} className="shrink-0 mt-0.5" /> {error}
-        </div>
-      )}
-    </div>
-  )
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -334,7 +344,7 @@ export default function TStudents() {
                   </div>
                 ) : (
                   <div className="p-6 space-y-4">
-                    <StudentForm />
+                    <StudentForm form={form} setForm={setForm} error={error} />
                     <div className="flex justify-end gap-3 border-t border-gray-100 pt-4">
                       <button onClick={closeModal} className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50">Cancel</button>
                       <button onClick={modal === 'create' ? handleCreate : handleEdit} disabled={saving}

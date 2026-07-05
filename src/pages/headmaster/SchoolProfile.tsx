@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import { motion } from 'framer-motion'
 import { School, Save, CheckCircle, Upload, X } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
@@ -38,6 +38,27 @@ const DISTRICTS = [
 ]
 
 const inputCls = 'w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B2447]/30 focus:border-[#0B2447] disabled:bg-gray-50 disabled:text-gray-400 transition-all'
+
+const Field = ({
+  label, name, placeholder = '', type = 'text', required = false, form, setForm, loading,
+}: {
+  label: string; name: keyof Profile; placeholder?: string; type?: string; required?: boolean
+  form: Profile; setForm: Dispatch<SetStateAction<Profile>>; loading: boolean
+}) => (
+  <div>
+    <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+      {label}{required && <span className="text-red-500 ml-0.5">*</span>}
+    </label>
+    <input
+      type={type}
+      value={form[name] as string}
+      onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))}
+      placeholder={placeholder}
+      disabled={loading}
+      className={inputCls}
+    />
+  </div>
+)
 
 export default function SchoolProfile() {
   const { token } = useAuth()
@@ -103,24 +124,6 @@ export default function SchoolProfile() {
     }
   }
 
-  const Field = ({
-    label, name, placeholder = '', type = 'text', required = false,
-  }: { label: string; name: keyof Profile; placeholder?: string; type?: string; required?: boolean }) => (
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
-      </label>
-      <input
-        type={type}
-        value={form[name] as string}
-        onChange={set(name)}
-        placeholder={placeholder}
-        disabled={loading}
-        className={inputCls}
-      />
-    </div>
-  )
-
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
@@ -184,17 +187,17 @@ export default function SchoolProfile() {
 
               <div className="border-t border-gray-100 pt-5 space-y-4">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">School Identity</p>
-                <Field label="School Name" name="schoolName" placeholder="Government Model Higher Secondary School" required />
+                <Field label="School Name" name="schoolName" placeholder="Government Model Higher Secondary School" required form={form} setForm={setForm} loading={loading} />
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <Field label="School Code" name="schoolCode" placeholder="TN-CB-0042" required />
-                  <Field label="EMIS Code" name="emisCode" placeholder="33XXXXXX" />
-                  <Field label="UDISE+ Code" name="udiseCode" placeholder="33XXXXXXXXXX" />
+                  <Field label="School Code" name="schoolCode" placeholder="TN-CB-0042" required form={form} setForm={setForm} loading={loading} />
+                  <Field label="EMIS Code" name="emisCode" placeholder="33XXXXXX" form={form} setForm={setForm} loading={loading} />
+                  <Field label="UDISE+ Code" name="udiseCode" placeholder="33XXXXXXXXXX" form={form} setForm={setForm} loading={loading} />
                 </div>
               </div>
 
               <div className="border-t border-gray-100 pt-5 space-y-4">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Location</p>
-                <Field label="Address" name="address" placeholder="No. 1, Main Road, Town" />
+                <Field label="Address" name="address" placeholder="No. 1, Main Road, Town" form={form} setForm={setForm} loading={loading} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5">
@@ -209,27 +212,27 @@ export default function SchoolProfile() {
                       {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                   </div>
-                  <Field label="Block" name="block" placeholder="e.g. Chellampalayam" required />
+                  <Field label="Block" name="block" placeholder="e.g. Chellampalayam" required form={form} setForm={setForm} loading={loading} />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field label="Panchayat" name="panchayat" placeholder="e.g. Karumathampatty" />
-                  <Field label="PIN Code" name="pinCode" placeholder="641010" />
+                  <Field label="Panchayat" name="panchayat" placeholder="e.g. Karumathampatty" form={form} setForm={setForm} loading={loading} />
+                  <Field label="PIN Code" name="pinCode" placeholder="641010" form={form} setForm={setForm} loading={loading} />
                 </div>
               </div>
 
               <div className="border-t border-gray-100 pt-5 space-y-4">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Contact</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field label="Contact Number" name="contactNumber" placeholder="9876543210" type="tel" />
-                  <Field label="Email" name="email" placeholder="school@tn.gov.in" type="email" />
+                  <Field label="Contact Number" name="contactNumber" placeholder="9876543210" type="tel" form={form} setForm={setForm} loading={loading} />
+                  <Field label="Email" name="email" placeholder="school@tn.gov.in" type="email" form={form} setForm={setForm} loading={loading} />
                 </div>
               </div>
 
               <div className="border-t border-gray-100 pt-5 space-y-4">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Administration</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field label="Headmaster Name" name="headmasterName" placeholder="e.g. S. Ramalingam" required />
-                  <Field label="Academic Year" name="academicYear" placeholder="2025-2026" required />
+                  <Field label="Headmaster Name" name="headmasterName" placeholder="e.g. S. Ramalingam" required form={form} setForm={setForm} loading={loading} />
+                  <Field label="Academic Year" name="academicYear" placeholder="2025-2026" required form={form} setForm={setForm} loading={loading} />
                 </div>
               </div>
 

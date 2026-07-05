@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, type Dispatch, type SetStateAction } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Plus, Edit2, Trash2, X, Eye, EyeOff, Copy, CheckCircle, ChevronLeft, ChevronRight, Filter, Download } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
@@ -11,6 +11,19 @@ interface Teacher {
 const SUBJECTS = ['Mathematics','Science','Tamil','English','Social Science','Computer Science','Physics','Chemistry','Biology','Commerce','Economics','History']
 const EMPTY_FORM = { fullName: '', employeeId: '', mobile: '', email: '', subject: '', username: '', status: 'ACTIVE' }
 const LIMIT = 8
+
+type TeacherFormData = typeof EMPTY_FORM
+
+const InputField = ({ label, name, type = 'text', required = false, placeholder = '', form, setForm }: {
+  label: string; name: keyof TeacherFormData; type?: string; required?: boolean; placeholder?: string
+  form: TeacherFormData; setForm: Dispatch<SetStateAction<TeacherFormData>>
+}) => (
+  <div>
+    <label className="block text-xs font-semibold text-gray-600 mb-1">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>
+    <input type={type} value={form[name] as string} onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))} placeholder={placeholder}
+      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B2447]/30 focus:border-[#0B2447]" />
+  </div>
+)
 
 export default function TeacherManagement() {
   const { token } = useAuth()
@@ -85,14 +98,6 @@ export default function TeacherManagement() {
 
   const copyPass = () => { navigator.clipboard.writeText(genPassword); setCopied(true); setTimeout(() => setCopied(false), 2000) }
   const totalPages = Math.ceil(total / LIMIT)
-
-  const InputField = ({ label, name, type = 'text', required = false, placeholder = '' }: { label: string; name: keyof typeof form; type?: string; required?: boolean; placeholder?: string }) => (
-    <div>
-      <label className="block text-xs font-semibold text-gray-600 mb-1">{label}{required && <span className="text-red-500 ml-0.5">*</span>}</label>
-      <input type={type} value={form[name]} onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))} placeholder={placeholder}
-        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B2447]/30 focus:border-[#0B2447]" />
-    </div>
-  )
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -228,10 +233,10 @@ export default function TeacherManagement() {
               ) : (
                 <div className="p-6 space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2"><InputField label="Full Name" name="fullName" required placeholder="e.g. A. Muruganantham" /></div>
-                    <InputField label="Employee ID" name="employeeId" required placeholder="EMP001" />
-                    <InputField label="Mobile Number" name="mobile" type="tel" required placeholder="9876543210" />
-                    <InputField label="Email" name="email" type="email" placeholder="optional" />
+                    <div className="col-span-2"><InputField label="Full Name" name="fullName" required placeholder="e.g. A. Muruganantham" form={form} setForm={setForm} /></div>
+                    <InputField label="Employee ID" name="employeeId" required placeholder="EMP001" form={form} setForm={setForm} />
+                    <InputField label="Mobile Number" name="mobile" type="tel" required placeholder="9876543210" form={form} setForm={setForm} />
+                    <InputField label="Email" name="email" type="email" placeholder="optional" form={form} setForm={setForm} />
                     <div>
                       <label className="block text-xs font-semibold text-gray-600 mb-1">Subject<span className="text-red-500 ml-0.5">*</span></label>
                       <select value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
@@ -240,7 +245,7 @@ export default function TeacherManagement() {
                         {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
-                    <InputField label="Username" name="username" required placeholder="teacher_name" />
+                    <InputField label="Username" name="username" required placeholder="teacher_name" form={form} setForm={setForm} />
                     <div>
                       <label className="block text-xs font-semibold text-gray-600 mb-1">Status</label>
                       <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
