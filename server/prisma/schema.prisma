@@ -130,18 +130,20 @@ model LeaveRequest {
 }
 
 model Timetable {
-  id        Int     @id @default(autoincrement())
-  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  teacherId Int
-  className String
-  section   String
-  day       String
-  period    Int
-  subject   String
-  startTime String
-  endTime   String
+  id         Int     @id @default(autoincrement())
+  teacher    Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId  Int
+  className  String
+  section    String
+  day        String
+  period     Int
+  subject    String
+  roomNumber String  @default("")
+  startTime  String
+  endTime    String
 
   @@unique([className, section, day, period])
+  @@unique([teacherId, day, period])
 }
 
 model SchoolClass {

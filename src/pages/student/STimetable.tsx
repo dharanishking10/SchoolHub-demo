@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Calendar } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
-interface TEntry { id: number; className: string; section: string; day: string; period: number; subject: string; startTime: string; endTime: string; teacher: { fullName: string; subject: string } }
+interface TEntry { id: number; className: string; section: string; day: string; period: number; subject: string; roomNumber: string; startTime: string; endTime: string; teacher: { fullName: string; subject: string } }
 
 const DAYS = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY']
 const DAY_LABELS: Record<string, string> = { MONDAY:'Monday', TUESDAY:'Tuesday', WEDNESDAY:'Wednesday', THURSDAY:'Thursday', FRIDAY:'Friday' }
@@ -85,7 +85,7 @@ export default function STimetable() {
                       {e ? (
                         <div className="flex-1">
                           <p className="font-bold text-sm">{e.subject}</p>
-                          <p className="text-xs opacity-70">{e.teacher.fullName} · {e.startTime}–{e.endTime}</p>
+                          <p className="text-xs opacity-70">{e.teacher.fullName} · {e.startTime}–{e.endTime}{e.roomNumber ? ` · ${e.roomNumber}` : ''}</p>
                         </div>
                       ) : <p className="text-sm opacity-40 flex-1">Free Period</p>}
                     </div>

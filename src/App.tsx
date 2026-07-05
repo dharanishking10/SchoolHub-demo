@@ -18,6 +18,7 @@ import AttendanceReports from './pages/headmaster/AttendanceReports'
 import HMAnnouncements from './pages/headmaster/Announcements'
 import AuditLog from './pages/headmaster/AuditLog'
 import ExportCenter from './pages/headmaster/ExportCenter'
+import HMTimetable from './pages/headmaster/HMTimetable'
 
 import TeacherLayout from './pages/teacher/TeacherLayout'
 import TDashboard from './pages/teacher/TDashboard'
@@ -58,6 +59,7 @@ function App() {
           <Route path="announcements" element={<HMAnnouncements />} />
           <Route path="reports" element={<Reports />} />
           <Route path="export-center" element={<ExportCenter />} />
+          <Route path="timetable" element={<HMTimetable />} />
           <Route path="audit-log" element={<AuditLog />} />
           <Route path="school" element={<SchoolProfile />} />
           <Route path="schemes" element={<GovernmentSchemes />} />
