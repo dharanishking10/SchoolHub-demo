@@ -75,6 +75,24 @@ router.put('/:id', verifyToken, requireRole('HEADMASTER'), async (req: AuthReque
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })
 
+// POST /:id/reset-password — HEADMASTER only
+router.post('/:id/reset-password', verifyToken, requireRole('HEADMASTER'), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id)
+    if (isNaN(id)) { res.status(400).json({ success: false, message: 'Invalid teacher ID' }); return }
+    const { newPassword } = req.body
+    if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
+      res.status(400).json({ success: false, message: 'Password must be at least 6 characters' }); return
+    }
+    const teacher = await prisma.teacher.findUnique({ where: { id } })
+    if (!teacher) { res.status(404).json({ success: false, message: 'Teacher not found' }); return }
+    const hashed = await bcrypt.hash(newPassword, 10)
+    await prisma.teacher.update({ where: { id }, data: { password: hashed } })
+    await audit(req.user!.userId, req.user!.name || 'User', req.user!.role, 'Teacher Password Reset', `${teacher.fullName} (${teacher.employeeId})`)
+    res.json({ success: true, message: 'Password reset successfully' })
+  } catch { res.status(500).json({ success: false, message: 'Server error' }) }
+})
+
 // DELETE — HEADMASTER only
 router.delete('/:id', verifyToken, requireRole('HEADMASTER'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {

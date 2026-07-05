@@ -53,6 +53,35 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
   }
 })
 
+// PUT /change-password — TEACHER only (must supply current password)
+router.put('/change-password', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (req.user!.role !== 'TEACHER') {
+      res.status(403).json({ success: false, message: 'Only teachers can change their own password' }); return
+    }
+    const { currentPassword, newPassword } = req.body
+    if (!currentPassword || !newPassword) {
+      res.status(400).json({ success: false, message: 'Current and new password are required' }); return
+    }
+    if (newPassword.length < 8) {
+      res.status(400).json({ success: false, message: 'New password must be at least 8 characters' }); return
+    }
+    const hasUpper = /[A-Z]/.test(newPassword)
+    const hasLower = /[a-z]/.test(newPassword)
+    const hasNumOrSpecial = /[0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(newPassword)
+    if (!hasUpper || !hasLower || !hasNumOrSpecial) {
+      res.status(400).json({ success: false, message: 'Password must contain uppercase, lowercase, and a number or special character' }); return
+    }
+    const teacher = await prisma.teacher.findUnique({ where: { id: req.user!.userId } })
+    if (!teacher) { res.status(404).json({ success: false, message: 'Teacher not found' }); return }
+    const isValid = await bcrypt.compare(currentPassword, teacher.password)
+    if (!isValid) { res.status(401).json({ success: false, message: 'Current password is incorrect' }); return }
+    const hashed = await bcrypt.hash(newPassword, 10)
+    await prisma.teacher.update({ where: { id: teacher.id }, data: { password: hashed } })
+    res.json({ success: true, message: 'Password changed successfully' })
+  } catch { res.status(500).json({ success: false, message: 'Internal server error' }) }
+})
+
 router.get('/me', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (req.user!.role === 'HEADMASTER') {

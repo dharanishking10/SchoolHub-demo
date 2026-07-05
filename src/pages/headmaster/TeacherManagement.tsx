@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, type Dispatch, type SetStateAction } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, Edit2, Trash2, X, Eye, EyeOff, Copy, CheckCircle, ChevronLeft, ChevronRight, Filter, Download } from 'lucide-react'
+import { Search, Plus, Edit2, Trash2, X, Eye, EyeOff, Copy, CheckCircle, ChevronLeft, ChevronRight, Filter, Download, KeyRound } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
 interface Teacher {
@@ -34,7 +34,7 @@ export default function TeacherManagement() {
   const [filterSubject, setFilterSubject] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [loading, setLoading] = useState(true)
-  const [modal, setModal] = useState<'create' | 'edit' | 'delete' | null>(null)
+  const [modal, setModal] = useState<'create' | 'edit' | 'delete' | 'resetpw' | null>(null)
   const [selected, setSelected] = useState<Teacher | null>(null)
   const [form, setForm] = useState({ ...EMPTY_FORM })
   const [saving, setSaving] = useState(false)
@@ -43,6 +43,9 @@ export default function TeacherManagement() {
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+  const [resetPw, setResetPw] = useState('')
+  const [showResetPw, setShowResetPw] = useState(false)
+  const [resetDone, setResetDone] = useState(false)
 
   const fetchTeachers = useCallback(() => {
     setLoading(true)
@@ -60,7 +63,8 @@ export default function TeacherManagement() {
   const openCreate = () => { setForm({ ...EMPTY_FORM }); setGenPassword(''); setError(''); setModal('create') }
   const openEdit = (t: Teacher) => { setSelected(t); setForm({ fullName: t.fullName, employeeId: t.employeeId, mobile: t.mobile, email: t.email || '', subject: t.subject, username: t.username, status: t.status }); setError(''); setModal('edit') }
   const openDelete = (t: Teacher) => { setSelected(t); setModal('delete') }
-  const closeModal = () => { setModal(null); setSelected(null); setGenPassword(''); setError('') }
+  const openResetPw = (t: Teacher) => { setSelected(t); setResetPw(''); setShowResetPw(false); setResetDone(false); setError(''); setModal('resetpw') }
+  const closeModal = () => { setModal(null); setSelected(null); setGenPassword(''); setError(''); setResetPw(''); setResetDone(false) }
 
   const handleCreate = async () => {
     if (!form.fullName || !form.employeeId || !form.mobile || !form.subject || !form.username) { setError('Please fill all required fields.'); return }
@@ -85,6 +89,26 @@ export default function TeacherManagement() {
     setSaving(true)
     await fetch(`/api/teachers/${selected.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
     setSaving(false); closeModal(); fetchTeachers()
+  }
+
+  const handleResetPw = async () => {
+    if (!selected) return
+    if (!resetPw || resetPw.length < 6) { setError('Password must be at least 6 characters'); return }
+    setSaving(true); setError('')
+    try {
+      const res = await fetch(`/api/teachers/${selected.id}/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ newPassword: resetPw }),
+      })
+      const json = await res.json()
+      if (json.success) setResetDone(true)
+      else setError(json.message || 'Failed to reset password')
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const exportCSV = () => {
@@ -183,8 +207,9 @@ export default function TeacherManagement() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
-                      <button onClick={() => openEdit(t)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors"><Edit2 size={14} /></button>
-                      <button onClick={() => openDelete(t)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors"><Trash2 size={14} /></button>
+                      <button onClick={() => openEdit(t)} title="Edit teacher" className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors"><Edit2 size={14} /></button>
+                      <button onClick={() => openResetPw(t)} title="Reset password" className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-600 transition-colors"><KeyRound size={14} /></button>
+                      <button onClick={() => openDelete(t)} title="Delete teacher" className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors"><Trash2 size={14} /></button>
                     </div>
                   </td>
                 </motion.tr>
@@ -262,6 +287,47 @@ export default function TeacherManagement() {
                     <button onClick={modal === 'create' ? handleCreate : handleEdit} disabled={saving}
                       className="flex-1 py-2.5 bg-[#0B2447] text-white rounded-xl text-sm font-semibold hover:bg-[#163d6a] disabled:opacity-60">
                       {saving ? 'Saving…' : modal === 'create' ? 'Create Teacher' : 'Save Changes'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+        {modal === 'resetpw' && selected && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-[#0B2447] rounded-t-2xl">
+                <h2 className="text-white font-bold text-lg flex items-center gap-2"><KeyRound size={17} /> Reset Password</h2>
+                <button onClick={closeModal} className="text-white/70 hover:text-white"><X size={20} /></button>
+              </div>
+              {resetDone ? (
+                <div className="p-6 text-center">
+                  <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3"><CheckCircle size={28} className="text-emerald-600" /></div>
+                  <h3 className="font-bold text-gray-800 text-lg mb-1">Password Reset!</h3>
+                  <p className="text-gray-500 text-sm mb-5">Password for <span className="font-semibold text-gray-700">{selected.fullName}</span> has been updated.</p>
+                  <button onClick={closeModal} className="w-full py-2.5 bg-[#0B2447] text-white rounded-xl font-semibold text-sm hover:bg-[#163d6a]">Done</button>
+                </div>
+              ) : (
+                <div className="p-6 space-y-4">
+                  <p className="text-sm text-gray-500">Set a new password for <span className="font-semibold text-gray-700">{selected.fullName}</span> ({selected.employeeId}).</p>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">New Password</label>
+                    <div className="relative">
+                      <input type={showResetPw ? 'text' : 'password'} value={resetPw} onChange={e => setResetPw(e.target.value)}
+                        placeholder="Min. 6 characters"
+                        className="w-full px-3 py-2.5 pr-10 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B2447]/30 focus:border-[#0B2447]" />
+                      <button onClick={() => setShowResetPw(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        {showResetPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                  </div>
+                  {error && <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+                  <div className="flex gap-3 pt-1">
+                    <button onClick={closeModal} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
+                    <button onClick={handleResetPw} disabled={saving}
+                      className="flex-1 py-2.5 bg-[#0B2447] text-white rounded-xl text-sm font-semibold hover:bg-[#163d6a] disabled:opacity-60">
+                      {saving ? 'Saving…' : 'Reset Password'}
                     </button>
                   </div>
                 </div>
