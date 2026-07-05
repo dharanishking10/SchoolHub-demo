@@ -44,7 +44,7 @@ export default function LoginPage() {
       {/* Gov Banner */}
       <div className="bg-gray-100 border-b border-gray-300 py-1.5 px-4">
         <p className="text-xs text-gray-700 font-medium max-w-7xl mx-auto">
-          🏛️ An Official Government Education Portal — United States Department of Education
+          🏛️ Official Portal — Government of Tamil Nadu | Department of School Education
         </p>
       </div>
 
@@ -56,7 +56,7 @@ export default function LoginPage() {
           </div>
           <div>
             <h1 className="text-white font-bold text-xl tracking-tight leading-none">EduGov Connect</h1>
-            <p className="text-blue-200 text-xs mt-0.5">U.S. Department of Education — Unified Learning Platform</p>
+            <p className="text-blue-200 text-xs mt-0.5">Government of Tamil Nadu — Unified School Management Platform</p>
           </div>
         </div>
       </header>
@@ -149,7 +149,7 @@ export default function LoginPage() {
                 className="w-full py-2.5 px-4 border-2 border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
               >
                 <Shield size={16} className="text-[#003087]" />
-                Sign in with PIV / CAC Card
+                Sign in with Government eID
               </button>
             </div>
 
@@ -162,7 +162,7 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-6 text-center space-y-1">
-            <p className="text-blue-200 text-xs">🔒 This is a U.S. Government system. Unauthorized access is prohibited.</p>
+            <p className="text-blue-200 text-xs">🔒 This is a Tamil Nadu Government system. Unauthorized access is prohibited under the IT Act, 2000.</p>
             <p className="text-blue-300 text-xs opacity-70">
               By signing in you agree to the{' '}
               <a href="#" className="underline">Terms of Use</a> and{' '}
@@ -173,7 +173,7 @@ export default function LoginPage() {
       </main>
 
       <footer className="bg-[#002060] py-4 px-6 text-center">
-        <p className="text-blue-300 text-xs">© 2026 U.S. Department of Education · EduGov Connect · All rights reserved</p>
+        <p className="text-blue-300 text-xs">© 2026 Government of Tamil Nadu · Department of School Education · EduGov Connect</p>
       </footer>
     </div>
   )

@@ -21,3 +21,13 @@ No refresh-token/rotating-session backend exists. JWTs are 8h (`server/src/middl
 ## Teachers can only edit today's attendance
 `POST /api/attendance` rejects (403) when `req.user.role === 'TEACHER'` and the submitted `date` isn't today; Headmasters are unrestricted. Frontend (`TAttendance.tsx`) also disables the mark buttons in this case rather than relying solely on the backend error.
 **Why:** explicit product requirement to prevent teachers from retroactively altering records; Headmaster is the escalation path for corrections.
+
+## Brand identity is Tamil Nadu Government, not US
+The canonical brand text is "Government of Tamil Nadu / Department of School Education" (see `LandingPage.tsx`, layout headers). Some older top-level page files had drifted to "U.S. Department of Education" copy.
+**Why:** those pages (`Dashboard.tsx`, `StudentDashboard.tsx`, `HeadmasterDashboard.tsx`, `TeacherDashboard.tsx`) were unused/unrouted legacy leftovers with stale placeholder copy; `LoginPage.tsx` also had the same drift despite being live. All four unused files were deleted and `LoginPage.tsx` was corrected.
+**How to apply:** if any new page shows US-government copy or a differing brand line, treat it as drift — align to the Tamil Nadu Government wording and check whether the file is even routed in `App.tsx` before fixing (it may be dead code to delete instead).
+
+## In-app confirm/alert pattern for exam module
+`Examinations.tsx` uses local `confirmAction`/`pageError` state + an inline modal instead of native `confirm()`/`alert()`, to match the app's polished UI. Other older pages (e.g. `TAnnouncements.tsx`, `Announcements.tsx`) still use native `confirm()`.
+**Why:** native dialogs look out of place against the government-portal styling; kept scoped to files touched during Stage 14 polish rather than a full app-wide sweep.
+**How to apply:** if asked to polish another page, replace native `confirm()/alert()` with the same local-state + modal pattern for consistency, rather than introducing a new toast library.

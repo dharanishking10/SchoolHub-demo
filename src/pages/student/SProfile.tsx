@@ -11,7 +11,10 @@ export default function SProfile() {
 
   useEffect(() => {
     fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json()).then(d => { if (d.success) setProfile(d.data.user) }).finally(() => setLoading(false))
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.success) setProfile(d.data.user) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [token])
 
   const SECTIONS = profile ? [

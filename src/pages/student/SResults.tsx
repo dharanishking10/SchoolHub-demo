@@ -26,6 +26,7 @@ export default function SResults() {
   const [loading, setLoading] = useState(true)
   const [activeExamId, setActiveExamId] = useState<number | null>(null)
   const [downloading, setDownloading] = useState(false)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
 
   const h = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token])
 
@@ -43,10 +44,10 @@ export default function SResults() {
 
   const downloadReportCard = async () => {
     if (!active) return
-    setDownloading(true)
+    setDownloading(true); setDownloadError(null)
     const res = await fetch(`/api/exam-marks/meta/report-card?examId=${active.examId}`, { headers: h }).then(r => r.json())
     setDownloading(false)
-    if (!res.success) { alert(res.message || 'Failed to generate report card'); return }
+    if (!res.success) { setDownloadError(res.message || 'Failed to generate report card'); return }
     generateReportCardPdf(res.data)
   }
 
@@ -64,6 +65,13 @@ export default function SResults() {
           </button>
         )}
       </motion.div>
+
+      {downloadError && (
+        <div className="mb-5 flex items-center justify-between gap-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
+          <span>{downloadError}</span>
+          <button onClick={() => setDownloadError(null)} className="text-red-400 hover:text-red-600 font-bold">×</button>
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-4">{[...Array(2)].map((_, i) => <div key={i} className="h-40 bg-white rounded-2xl border animate-pulse" />)}</div>

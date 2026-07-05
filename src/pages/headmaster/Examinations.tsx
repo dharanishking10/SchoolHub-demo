@@ -11,6 +11,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import ExamFormModal, { ExamFormValues } from './exams/ExamFormModal'
 import SubjectFormModal, { SubjectFormValues } from './exams/SubjectFormModal'
 import { exportExamMarksToExcel } from '../../utils/examExcel'
+import { generateAnalysisPdf } from '../../utils/examAnalysisPdf'
 
 interface Exam { id: number; examName: string; examType: string; academicYear: string; startDate: string; endDate: string; status: 'DRAFT' | 'PUBLISHED'; _count?: { marks: number } }
 interface Subject { id: number; subjectName: string; subjectCode: string }
@@ -38,6 +39,8 @@ export default function Examinations() {
   const [subjectModal, setSubjectModal] = useState<{ mode: 'create' | 'edit'; subject?: Subject } | null>(null)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+  const [pageError, setPageError] = useState<string | null>(null)
+  const [confirmAction, setConfirmAction] = useState<{ message: string; danger?: boolean; onConfirm: () => void } | null>(null)
   const [busyId, setBusyId] = useState<number | null>(null)
 
   const h = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token])
@@ -77,23 +80,36 @@ export default function Examinations() {
     setExamModal(null); loadAll()
   }
 
-  const deleteExam = async (id: number) => {
-    if (!confirm('Delete this exam and all its marks? This cannot be undone.')) return
-    setBusyId(id)
-    const res = await fetch(`/api/exams/${id}`, { method: 'DELETE', headers: h }).then(r => r.json())
-    setBusyId(null)
-    if (!res.success) { alert(res.message || 'Failed to delete'); return }
-    loadAll()
+  const deleteExam = (id: number) => {
+    setConfirmAction({
+      message: 'Delete this exam and all its marks? This cannot be undone.',
+      danger: true,
+      onConfirm: async () => {
+        setConfirmAction(null)
+        setBusyId(id)
+        const res = await fetch(`/api/exams/${id}`, { method: 'DELETE', headers: h }).then(r => r.json())
+        setBusyId(null)
+        if (!res.success) { setPageError(res.message || 'Failed to delete'); return }
+        loadAll()
+      },
+    })
   }
 
-  const togglePublish = async (exam: Exam) => {
+  const togglePublish = (exam: Exam) => {
     const action = exam.status === 'PUBLISHED' ? 'unpublish' : 'publish'
-    if (action === 'publish' && !confirm('Publish results? Students will be notified and marks become read-only for teachers.')) return
-    setBusyId(exam.id)
-    const res = await fetch(`/api/exams/${exam.id}/${action}`, { method: 'POST', headers: h }).then(r => r.json())
-    setBusyId(null)
-    if (!res.success) { alert(res.message || 'Action failed'); return }
-    loadAll()
+    const run = async () => {
+      setConfirmAction(null)
+      setBusyId(exam.id)
+      const res = await fetch(`/api/exams/${exam.id}/${action}`, { method: 'POST', headers: h }).then(r => r.json())
+      setBusyId(null)
+      if (!res.success) { setPageError(res.message || 'Action failed'); return }
+      loadAll()
+    }
+    if (action === 'publish') {
+      setConfirmAction({ message: 'Publish results? Students will be notified and marks become read-only for teachers.', onConfirm: run })
+    } else {
+      run()
+    }
   }
 
   const saveSubject = async (values: SubjectFormValues) => {
@@ -107,19 +123,25 @@ export default function Examinations() {
     setSubjectModal(null); loadAll()
   }
 
-  const deleteSubject = async (id: number) => {
-    if (!confirm('Delete this subject? This cannot be undone.')) return
-    setBusyId(id)
-    const res = await fetch(`/api/subjects/${id}`, { method: 'DELETE', headers: h }).then(r => r.json())
-    setBusyId(null)
-    if (!res.success) { alert(res.message || 'Failed to delete'); return }
-    loadAll()
+  const deleteSubject = (id: number) => {
+    setConfirmAction({
+      message: 'Delete this subject? This cannot be undone.',
+      danger: true,
+      onConfirm: async () => {
+        setConfirmAction(null)
+        setBusyId(id)
+        const res = await fetch(`/api/subjects/${id}`, { method: 'DELETE', headers: h }).then(r => r.json())
+        setBusyId(null)
+        if (!res.success) { setPageError(res.message || 'Failed to delete'); return }
+        loadAll()
+      },
+    })
   }
 
   const exportPdf = async () => {
-    const url = analysisExamId ? `/api/exam-marks/meta/report-card?examId=${analysisExamId}` : ''
-    void url
-    alert('Select a student on the Analysis tab or use a student\'s report card from the Teacher/Student portal for individual PDFs. Use Export Excel below for a full marks sheet.')
+    if (!analysis) { setPageError('No analysis data available to export yet.'); return }
+    const examLabel = analysisExamId ? exams.find(e => e.id === parseInt(analysisExamId, 10))?.examName || 'Exam' : 'All Examinations'
+    generateAnalysisPdf(analysis, examLabel)
   }
 
   const exportExcel = async () => {
@@ -147,10 +169,17 @@ export default function Examinations() {
             <FileSpreadsheet size={16} /> Export Excel
           </button>
           <button onClick={exportPdf} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-gov-border text-[#0B2447] hover:bg-gray-50">
-            <FileDown size={16} /> Export Info
+            <FileDown size={16} /> Export PDF
           </button>
         </div>
       </motion.div>
+
+      {pageError && (
+        <div className="mb-5 flex items-center justify-between gap-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
+          <span>{pageError}</span>
+          <button onClick={() => setPageError(null)} className="text-red-400 hover:text-red-600 font-bold">×</button>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         {[
@@ -357,6 +386,24 @@ export default function Examinations() {
           saving={saving}
           error={formError}
         />
+      )}
+      {confirmAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
+            <p className="text-sm text-gray-700 mb-5">{confirmAction.message}</p>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setConfirmAction(null)} className="px-4 py-2 rounded-xl text-sm font-semibold border border-gov-border text-gray-600 hover:bg-gray-50">
+                Cancel
+              </button>
+              <button
+                onClick={confirmAction.onConfirm}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold text-white ${confirmAction.danger ? 'bg-red-600 hover:bg-red-700' : 'bg-[#0B2447] hover:bg-[#0d2d5a]'}`}
+              >
+                Confirm
+              </button>
+            </div>
+          </motion.div>
+        </div>
       )}
     </div>
   )
