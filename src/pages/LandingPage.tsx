@@ -137,10 +137,9 @@ export default function LandingPage() {
             {/* Tamil Nadu Government Emblem */}
             <div className="shrink-0">
               <img
-                src="/tn-emblem.svg"
+                src="/tn-emblem-official.png"
                 alt="Tamil Nadu Government Emblem"
                 className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-lg"
-                style={{ filter: 'drop-shadow(0 2px 8px rgba(212,175,55,0.3))' }}
               />
             </div>
 
