@@ -1,0 +1,359 @@
+# STAGE 14 – EXAMINATION & MARKS MANAGEMENT (FINAL CORE MODULE)
+
+Continue building the existing EduGov Connect project.
+
+IMPORTANT
+
+- Do NOT recreate the project.
+- Do NOT modify completed modules.
+- Continue from Stage 13.
+- Preserve the existing architecture.
+- Everything must compile successfully.
+- Maintain the existing Government theme (#0B2447 and #D4AF37).
+
+====================================================
+OBJECTIVE
+====================================================
+
+Implement a complete Examination and Marks Management System.
+
+Hierarchy:
+
+Headmaster
+      ↓
+Creates Exams
+
+Teacher
+      ↓
+Enters Marks
+
+Student
+      ↓
+Views Results
+
+====================================================
+ROLE PERMISSIONS
+====================================================
+
+HEADMASTER
+
+✔ Create Exam
+✔ Edit Exam
+✔ Delete Exam
+✔ View all Marks
+✔ View Result Analysis
+✔ View School Statistics
+✔ Export Reports
+✔ Publish Results
+
+----------------------------------------------------
+
+TEACHER
+
+✔ Select Class
+✔ Select Subject
+✔ Select Exam
+✔ Enter Marks
+✔ Edit Marks before publishing
+✔ View Class Results
+
+----------------------------------------------------
+
+STUDENT
+
+✔ View Results
+✔ View Subject Marks
+✔ View Total Marks
+✔ View Percentage
+✔ View Grade
+✔ Download Report Card (PDF)
+
+====================================================
+DATABASE
+====================================================
+
+Create Prisma models if they do not exist.
+
+Exam
+
+- id
+- examName
+- academicYear
+- startDate
+- endDate
+- status
+- createdAt
+- updatedAt
+
+Subject
+
+- id
+- subjectName
+- subjectCode
+
+Mark
+
+- id
+- studentId
+- classId
+- subjectId
+- examId
+- marksObtained
+- maximumMarks
+- grade
+- remarks
+- createdAt
+- updatedAt
+
+====================================================
+HEADMASTER DASHBOARD
+====================================================
+
+Create Examination Dashboard.
+
+Cards
+
+- Total Exams
+- Total Subjects
+- Published Results
+- Pass Percentage
+
+Charts
+
+- Subject Performance
+- Class Performance
+
+Buttons
+
+- Create Exam
+- Publish Result
+- Export PDF
+- Export Excel
+
+====================================================
+TEACHER PAGE
+====================================================
+
+Marks Entry
+
+Select
+
+Academic Year
+
+↓
+
+Exam
+
+↓
+
+Class
+
+↓
+
+Subject
+
+↓
+
+Student List
+
+Teacher enters
+
+Marks Obtained
+
+Maximum Marks
+
+Remarks
+
+Save
+
+====================================================
+VALIDATION
+====================================================
+
+Marks cannot exceed Maximum Marks.
+
+Marks cannot be negative.
+
+Duplicate mark entry not allowed.
+
+Teacher can edit only until results are published.
+
+After publishing,
+
+Marks become Read Only.
+
+====================================================
+EXAMS
+====================================================
+
+Support
+
+Unit Test 1
+
+Unit Test 2
+
+Quarterly
+
+Half Yearly
+
+Revision Test
+
+Annual Examination
+
+====================================================
+REPORT CARD
+====================================================
+
+Generate Professional Report Card.
+
+Display
+
+Government of Tamil Nadu
+
+Department of School Education
+
+School Name
+
+Student Name
+
+Admission Number
+
+Class
+
+Section
+
+Exam Name
+
+Subject-wise Marks
+
+Total
+
+Percentage
+
+Grade
+
+Result
+
+Headmaster Signature
+
+Teacher Signature
+
+Download PDF
+
+====================================================
+RESULT ANALYSIS
+====================================================
+
+Headmaster can view
+
+School Pass Percentage
+
+Class-wise Pass %
+
+Subject-wise Pass %
+
+Top Scorers
+
+Lowest Scorers
+
+Average Marks
+
+====================================================
+SEARCH
+====================================================
+
+Search
+
+Student Name
+
+Admission Number
+
+Class
+
+Exam
+
+Subject
+
+====================================================
+FILTER
+====================================================
+
+Academic Year
+
+Exam
+
+Class
+
+Section
+
+Subject
+
+====================================================
+EXPORT
+====================================================
+
+Export
+
+PDF
+
+Excel
+
+====================================================
+UI
+====================================================
+
+Government Theme
+
+Professional Government Dashboard
+
+Responsive
+
+Desktop
+
+Tablet
+
+Mobile
+
+====================================================
+SECURITY
+====================================================
+
+Teachers can manage only their assigned classes.
+
+Students cannot modify marks.
+
+Headmaster has complete access.
+
+====================================================
+VERIFICATION
+====================================================
+
+Verify
+
+✔ Exam Creation
+
+✔ Subject Creation
+
+✔ Marks Entry
+
+✔ Marks Editing
+
+✔ Result Publishing
+
+✔ Student Result View
+
+✔ Report Card PDF
+
+✔ Excel Export
+
+✔ Charts
+
+✔ Role Permissions
+
+✔ No TypeScript Errors
+
+✔ No Build Errors
+
+Commit Message
+
+Stage 14 – Examination & Marks Management Completed
