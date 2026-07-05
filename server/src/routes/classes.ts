@@ -6,8 +6,6 @@ import { audit } from '../utils/activityLog'
 const router = Router()
 const prisma = new PrismaClient()
 
-// ── helpers ─────────────────────────────────────────────────────────────────
-
 function requireHeadmaster(req: AuthRequest, res: Response): boolean {
   if (req.user?.role !== 'HEADMASTER') {
     res.status(403).json({ success: false, message: 'Headmaster access only' })
@@ -27,10 +25,40 @@ async function withStudentCount(cls: { id: number; name: string; section: string
   return { ...cls, currentStudentCount: count }
 }
 
+// ── GET /api/classes/mine  (student sees own class) ──────────────────────────
+router.get('/mine', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (req.user?.role !== 'STUDENT') {
+      res.status(403).json({ success: false, message: 'Student access only' })
+      return
+    }
+    const student = await prisma.student.findUnique({
+      where: { username: req.user.username },
+      select: { className: true, section: true },
+    })
+    if (!student) {
+      res.status(404).json({ success: false, message: 'Student record not found' })
+      return
+    }
+    const cls = await prisma.schoolClass.findFirst({
+      where: { name: student.className, section: student.section },
+      include: classInclude,
+    })
+    if (!cls) {
+      res.json({ success: true, data: null })
+      return
+    }
+    const withCount = await withStudentCount(cls as Parameters<typeof withStudentCount>[0])
+    res.json({ success: true, data: withCount })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ success: false, message: 'Server error' })
+  }
+})
+
 // ── GET /api/classes ─────────────────────────────────────────────────────────
 router.get('/', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    // Students have no access
     if (req.user?.role === 'STUDENT') {
       res.status(403).json({ success: false, message: 'Access denied' })
       return
@@ -47,6 +75,17 @@ router.get('/', verifyToken, async (req: AuthRequest, res: Response): Promise<vo
     const skip = (parseInt(page) - 1) * parseInt(limit)
 
     const where: Record<string, unknown> = {}
+
+    // Teachers: automatically scope to their assigned classes
+    if (req.user?.role === 'TEACHER') {
+      const teacher = await prisma.teacher.findUnique({ where: { username: req.user.username } })
+      if (!teacher) {
+        res.json({ success: true, data: { classes: [], total: 0, page: 1, limit: parseInt(limit), academicYears: [], totalStudents: 0, availableSeats: 0 } })
+        return
+      }
+      where.classTeacherId = teacher.id
+    }
+
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -68,15 +107,26 @@ router.get('/', verifyToken, async (req: AuthRequest, res: Response): Promise<vo
       }),
     ])
 
-    // Attach current student count for each class
     const classesWithCount = await Promise.all(classes.map(withStudentCount))
 
-    // Distinct academic years for filter dropdown
     const years = await prisma.schoolClass.findMany({
       select: { academicYear: true },
+      where: where.classTeacherId ? { classTeacherId: where.classTeacherId as number } : {},
       distinct: ['academicYear'],
       orderBy: { academicYear: 'desc' },
     })
+
+    // Aggregate stats (headmaster view)
+    let totalStudents = 0
+    let availableSeats = 0
+    if (req.user?.role === 'HEADMASTER') {
+      const [studentCount, seatAggregate] = await Promise.all([
+        prisma.student.count({ where: { status: 'ACTIVE' } }),
+        prisma.schoolClass.aggregate({ _sum: { maxStrength: true } }),
+      ])
+      totalStudents = studentCount
+      availableSeats = Math.max(0, (seatAggregate._sum.maxStrength || 0) - studentCount)
+    }
 
     res.json({
       success: true,
@@ -86,6 +136,8 @@ router.get('/', verifyToken, async (req: AuthRequest, res: Response): Promise<vo
         page: parseInt(page),
         limit: parseInt(limit),
         academicYears: years.map(y => y.academicYear),
+        totalStudents,
+        availableSeats,
       },
     })
   } catch (err) {
@@ -128,7 +180,6 @@ router.post('/', verifyToken, async (req: AuthRequest, res: Response): Promise<v
       return
     }
 
-    // Duplicate check
     const existing = await prisma.schoolClass.findUnique({
       where: { name_section_academicYear: { name, section, academicYear } },
     })

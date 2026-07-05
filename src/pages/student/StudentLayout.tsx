@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { NavLink, useNavigate, Outlet } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { LayoutDashboard, User, ClipboardCheck, BookOpen, FileText, Calendar, Mail, LogOut, Menu, X, ChevronRight, Megaphone } from 'lucide-react'
+import { LayoutDashboard, User, ClipboardCheck, BookOpen, FileText, Calendar, Mail, LogOut, Menu, X, ChevronRight, Megaphone, School } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import NotificationBell from '../../components/NotificationBell'
 
 const NAV = [
   { to: '/dashboard/student/home', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/dashboard/student/profile', icon: User, label: 'My Profile' },
+  { to: '/dashboard/student/class', icon: School, label: 'My Class' },
   { to: '/dashboard/student/attendance', icon: ClipboardCheck, label: 'Attendance' },
   { to: '/dashboard/student/marks', icon: BookOpen, label: 'Marks' },
   { to: '/dashboard/student/homework', icon: FileText, label: 'Homework' },

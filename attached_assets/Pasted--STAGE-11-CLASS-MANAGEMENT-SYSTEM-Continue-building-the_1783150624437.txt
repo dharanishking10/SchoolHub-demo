@@ -1,0 +1,288 @@
+# STAGE 11 – CLASS MANAGEMENT SYSTEM
+
+Continue building the existing EduGov Connect project.
+
+IMPORTANT
+
+- Do NOT recreate the project.
+- Do NOT modify completed modules.
+- Continue from Stage 10A.
+- Preserve the existing architecture.
+- Everything must compile successfully.
+
+====================================================
+MODULE
+====================================================
+
+Class Management System
+
+====================================================
+OBJECTIVE
+====================================================
+
+Create a complete Class Management module where the Headmaster manages all school classes.
+
+Teachers can only view their assigned classes.
+
+Students can only view their own class.
+
+====================================================
+ROLE PERMISSIONS
+====================================================
+
+HEADMASTER
+
+- Create Class
+- Edit Class
+- Delete Class
+- Assign Class Teacher
+- View All Classes
+
+TEACHER
+
+- View Assigned Classes
+- View Student List
+- Cannot Create/Edit/Delete Classes
+
+STUDENT
+
+- View Own Class Only
+- Read Only
+
+====================================================
+DATABASE
+====================================================
+
+Create a Prisma model if it does not already exist.
+
+Class
+
+Fields
+
+- id
+- className
+- section
+- academicYear
+- roomNumber
+- maximumStrength
+- currentStrength
+- classTeacherId
+- status
+- createdAt
+- updatedAt
+
+Relationships
+
+- One Teacher can be assigned to many classes.
+- One Class contains many Students.
+
+====================================================
+BACKEND APIs
+====================================================
+
+GET /api/classes
+
+GET /api/classes/:id
+
+POST /api/classes
+
+PUT /api/classes/:id
+
+DELETE /api/classes/:id
+
+====================================================
+HEADMASTER PAGE
+====================================================
+
+Create:
+
+Class Management
+
+Features
+
+- Statistics Cards
+
+Total Classes
+
+Active Classes
+
+Total Students
+
+Available Seats
+
+Toolbar
+
+- Search
+- Academic Year Filter
+- Status Filter
+- Add Class Button
+
+Responsive Table
+
+Columns
+
+- Class
+- Section
+- Academic Year
+- Class Teacher
+- Room Number
+- Current Strength
+- Maximum Strength
+- Status
+- Actions
+
+Actions
+
+- View
+- Edit
+- Delete
+
+====================================================
+ADD / EDIT FORM
+====================================================
+
+Fields
+
+- Class Name
+
+Examples
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+Section
+
+A
+
+B
+
+C
+
+Academic Year
+
+Class Teacher
+
+Room Number
+
+Maximum Strength
+
+Status
+
+====================================================
+VALIDATION
+====================================================
+
+React Hook Form
+
+Zod
+
+Prevent duplicate
+
+Class + Section + Academic Year
+
+Maximum Strength must be greater than Current Strength.
+
+====================================================
+SEARCH
+====================================================
+
+Search by
+
+- Class
+- Teacher
+- Section
+
+====================================================
+FILTER
+====================================================
+
+Academic Year
+
+Status
+
+Teacher
+
+====================================================
+VIEW DETAILS
+====================================================
+
+Display
+
+Class Information
+
+Teacher
+
+Students Count
+
+Available Seats
+
+Academic Year
+
+====================================================
+UI
+====================================================
+
+Government Theme
+
+Primary
+
+#0B2447
+
+Secondary
+
+#D4AF37
+
+Professional Government Dashboard
+
+Responsive
+
+Desktop
+
+Tablet
+
+Mobile
+
+====================================================
+SIDEBAR
+====================================================
+
+Add
+
+Classes
+
+between
+
+Teachers
+
+and
+
+Students
+
+====================================================
+IMPORTANT
+====================================================
+
+Do NOT change login.
+
+Do NOT modify authentication.
+
+Do NOT modify previous modules.
+
+Only implement the Class Management module.
+
+Everything should compile successfully without errors.
+
+Commit message:
+
+Stage 11 - Class Management System

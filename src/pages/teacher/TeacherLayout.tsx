@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, useNavigate, Outlet } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { LayoutDashboard, Users, ClipboardCheck, BookOpen, FileText, Calendar, Mail, User, LogOut, Menu, X, ChevronRight, Megaphone } from 'lucide-react'
+import { LayoutDashboard, Users, ClipboardCheck, BookOpen, FileText, Calendar, Mail, User, LogOut, Menu, X, ChevronRight, Megaphone, School } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import NotificationBell from '../../components/NotificationBell'
 import GlobalSearch from '../../components/GlobalSearch'
@@ -9,6 +9,7 @@ import GlobalSearch from '../../components/GlobalSearch'
 const NAV = [
   { to: '/dashboard/teacher/home', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/dashboard/teacher/students', icon: Users, label: 'My Students' },
+  { to: '/dashboard/teacher/classes', icon: School, label: 'My Classes' },
   { to: '/dashboard/teacher/attendance', icon: ClipboardCheck, label: 'Attendance' },
   { to: '/dashboard/teacher/marks', icon: BookOpen, label: 'Marks' },
   { to: '/dashboard/teacher/homework', icon: FileText, label: 'Homework' },

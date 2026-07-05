@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import {
   Search, Plus, Edit2, Trash2, X, BookOpen, Users,
-  ChevronLeft, ChevronRight, Filter, GraduationCap,
+  ChevronLeft, ChevronRight, Filter, GraduationCap, Eye, MapPin, User,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -66,6 +66,8 @@ export default function ClassManagement() {
   // list state
   const [classes, setClasses] = useState<SchoolClass[]>([])
   const [total, setTotal] = useState(0)
+  const [totalStudents, setTotalStudents] = useState(0)
+  const [availableSeats, setAvailableSeats] = useState(0)
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [filterYear, setFilterYear] = useState('')
@@ -75,7 +77,7 @@ export default function ClassManagement() {
   const [showFilters, setShowFilters] = useState(false)
 
   // modal state
-  const [modal, setModal] = useState<'create' | 'edit' | 'delete' | null>(null)
+  const [modal, setModal] = useState<'create' | 'edit' | 'delete' | 'view' | null>(null)
   const [selected, setSelected] = useState<SchoolClass | null>(null)
   const [saving, setSaving] = useState(false)
   const [serverError, setServerError] = useState('')
@@ -116,6 +118,8 @@ export default function ClassManagement() {
           setClasses(d.data.classes)
           setTotal(d.data.total)
           setAcademicYears(d.data.academicYears || [])
+          setTotalStudents(d.data.totalStudents || 0)
+          setAvailableSeats(d.data.availableSeats || 0)
         }
       })
       .finally(() => setLoading(false))
@@ -202,6 +206,8 @@ export default function ClassManagement() {
 
   // ── Derived ───────────────────────────────────────────────────────────────
 
+  const openView = (cls: SchoolClass) => { setSelected(cls); setModal('view') }
+
   const totalPages = Math.ceil(total / LIMIT)
   const activeCount = classes.filter(c => c.status === 'ACTIVE').length
 
@@ -226,11 +232,12 @@ export default function ClassManagement() {
       </motion.div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
         {[
           { label: 'Total Classes', value: total, icon: BookOpen, color: 'bg-blue-50 text-blue-700' },
           { label: 'Active Classes', value: loading ? '—' : activeCount, icon: GraduationCap, color: 'bg-emerald-50 text-emerald-700' },
-          { label: 'Academic Years', value: loading ? '—' : academicYears.length, icon: Users, color: 'bg-violet-50 text-violet-700' },
+          { label: 'Total Students', value: loading ? '—' : totalStudents, icon: Users, color: 'bg-violet-50 text-violet-700' },
+          { label: 'Available Seats', value: loading ? '—' : availableSeats, icon: GraduationCap, color: 'bg-amber-50 text-amber-700' },
         ].map((c, i) => (
           <motion.div key={c.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
             className="bg-white rounded-2xl border border-gov-border shadow-sm p-4 flex items-center gap-3">
@@ -357,8 +364,9 @@ export default function ClassManagement() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
-                        <button onClick={() => openEdit(cls)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors"><Edit2 size={14} /></button>
-                        <button onClick={() => openDelete(cls)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors"><Trash2 size={14} /></button>
+                        <button onClick={() => openView(cls)} className="p-1.5 rounded-lg hover:bg-emerald-50 text-emerald-600 transition-colors" title="View"><Eye size={14} /></button>
+                        <button onClick={() => openEdit(cls)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors" title="Edit"><Edit2 size={14} /></button>
+                        <button onClick={() => openDelete(cls)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors" title="Delete"><Trash2 size={14} /></button>
                       </div>
                     </td>
                   </motion.tr>
@@ -395,6 +403,86 @@ export default function ClassManagement() {
 
       {/* ── Modals ──────────────────────────────────────────────────────────── */}
       <AnimatePresence>
+
+        {/* View modal */}
+        {modal === 'view' && selected && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 bg-[#0B2447] rounded-t-2xl">
+                <h2 className="text-white font-bold text-lg">Class Details</h2>
+                <button onClick={closeModal} className="text-white/70 hover:text-white"><X size={20} /></button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-[#0B2447]/10 flex items-center justify-center shrink-0">
+                    <span className="text-[#0B2447] font-extrabold text-2xl">{selected.name}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-[#0B2447]">Std {selected.name} – Section {selected.section}</h3>
+                    <p className="text-gray-500 text-sm">{selected.academicYear}</p>
+                    <span className={`inline-flex mt-1 px-2 py-0.5 rounded-full text-xs font-semibold ${selected.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+                      {selected.status}
+                    </span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { icon: Users, label: 'Students Enrolled', value: String(selected.currentStudentCount) },
+                    { icon: GraduationCap, label: 'Available Seats', value: String(Math.max(0, selected.maxStrength - selected.currentStudentCount)) },
+                    { icon: MapPin, label: 'Room Number', value: selected.roomNumber || 'Not assigned' },
+                    { icon: BookOpen, label: 'Max Strength', value: String(selected.maxStrength) },
+                  ].map(({ icon: Icon, label, value }) => (
+                    <div key={label} className="bg-gray-50 rounded-xl p-3">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Icon size={13} className="text-[#0B2447]/60" />
+                        <p className="text-xs text-gray-400">{label}</p>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-800">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-gray-50 rounded-xl p-3">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <User size={13} className="text-[#0B2447]/60" />
+                    <p className="text-xs text-gray-400">Class Teacher</p>
+                  </div>
+                  {selected.classTeacher ? (
+                    <>
+                      <p className="text-sm font-semibold text-gray-800">{selected.classTeacher.fullName}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{selected.classTeacher.subject} · {selected.classTeacher.employeeId}</p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">Not assigned</p>
+                  )}
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                    <span>Class Capacity</span>
+                    <span>{selected.currentStudentCount} / {selected.maxStrength}</span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${selected.currentStudentCount >= selected.maxStrength ? 'bg-red-400' : 'bg-emerald-400'}`}
+                      style={{ width: `${Math.min(100, (selected.currentStudentCount / selected.maxStrength) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3 pt-1">
+                  <button onClick={closeModal}
+                    className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">
+                    Close
+                  </button>
+                  <button onClick={() => { closeModal(); openEdit(selected) }}
+                    className="flex-1 py-2.5 bg-[#0B2447] text-white rounded-xl text-sm font-semibold hover:bg-[#163d6a]">
+                    Edit Class
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
 
         {/* Create / Edit modal */}
         {(modal === 'create' || modal === 'edit') && (

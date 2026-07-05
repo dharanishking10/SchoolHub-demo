@@ -23,6 +23,7 @@ import AcademicPromotion from './pages/headmaster/AcademicPromotion'
 
 import TeacherLayout from './pages/teacher/TeacherLayout'
 import TDashboard from './pages/teacher/TDashboard'
+import TClasses from './pages/teacher/TClasses'
 import TStudents from './pages/teacher/TStudents'
 import TAttendance from './pages/teacher/TAttendance'
 import TMarks from './pages/teacher/TMarks'
@@ -34,6 +35,7 @@ import TAnnouncements from './pages/teacher/TAnnouncements'
 
 import StudentLayout from './pages/student/StudentLayout'
 import SDashboard from './pages/student/SDashboard'
+import SClass from './pages/student/SClass'
 import SProfile from './pages/student/SProfile'
 import SAttendance from './pages/student/SAttendance'
 import SMarks from './pages/student/SMarks'
@@ -72,6 +74,7 @@ function App() {
         <Route path="/dashboard/teacher" element={<ProtectedRoute allowedRoles={['TEACHER']}><TeacherLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="home" replace />} />
           <Route path="home" element={<TDashboard />} />
+          <Route path="classes" element={<TClasses />} />
           <Route path="students" element={<TStudents />} />
           <Route path="attendance" element={<TAttendance />} />
           <Route path="marks" element={<TMarks />} />
@@ -86,6 +89,7 @@ function App() {
         <Route path="/dashboard/student" element={<ProtectedRoute allowedRoles={['STUDENT']}><StudentLayout /></ProtectedRoute>}>
           <Route index element={<Navigate to="home" replace />} />
           <Route path="home" element={<SDashboard />} />
+          <Route path="class" element={<SClass />} />
           <Route path="profile" element={<SProfile />} />
           <Route path="attendance" element={<SAttendance />} />
           <Route path="marks" element={<SMarks />} />
