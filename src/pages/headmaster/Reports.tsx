@@ -12,6 +12,16 @@ interface StudentData { total: number; boys: number; girls: number; attendance: 
 
 const PIE_COLORS = ['#0B2447', '#D4AF37', '#4f8ef7', '#e55']
 
+const ChartCard = ({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) => (
+  <div className="bg-white rounded-2xl border border-gov-border shadow-sm p-6">
+    <div className="flex items-center gap-2 mb-5">
+      <Icon size={18} className="text-[#0B2447]" />
+      <h2 className="text-base font-semibold text-[#0B2447]">{title}</h2>
+    </div>
+    {children}
+  </div>
+)
+
 export default function Reports() {
   const { token } = useAuth()
   const [stats, setStats] = useState<Stats | null>(null)
@@ -43,16 +53,6 @@ export default function Reports() {
     { name: 'Active', value: stats.activeTeachers },
     { name: 'Inactive', value: stats.teachers - stats.activeTeachers },
   ] : []
-
-  const ChartCard = ({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) => (
-    <div className="bg-white rounded-2xl border border-gov-border shadow-sm p-6">
-      <div className="flex items-center gap-2 mb-5">
-        <Icon size={18} className="text-[#0B2447]" />
-        <h2 className="text-base font-semibold text-[#0B2447]">{title}</h2>
-      </div>
-      {children}
-    </div>
-  )
 
   if (loading) return (
     <div className="p-4 sm:p-6 lg:p-8">
