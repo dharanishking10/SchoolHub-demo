@@ -1,0 +1,310 @@
+# STAGE 13 – COMPLETE ATTENDANCE MANAGEMENT SYSTEM
+
+Continue building the existing EduGov Connect project.
+
+IMPORTANT
+
+- Do NOT recreate the project.
+- Do NOT modify previous modules.
+- Continue from Stage 12.
+- Everything must compile successfully.
+- Keep the existing Government UI.
+
+==================================================
+OBJECTIVE
+==================================================
+
+Build a complete Attendance Management System.
+
+Attendance should work with
+
+Headmaster
+
+Teacher
+
+Student
+
+==================================================
+ROLE PERMISSIONS
+==================================================
+
+HEADMASTER
+
+✔ View attendance of all classes
+✔ View attendance reports
+✔ Export attendance
+✔ Filter attendance
+✔ Monthly reports
+
+TEACHER
+
+✔ Mark attendance
+✔ Edit same day attendance
+✔ View own class attendance
+✔ Generate attendance report
+
+STUDENT
+
+✔ View own attendance
+✔ Attendance percentage
+✔ Monthly attendance calendar
+
+==================================================
+DATABASE
+==================================================
+
+Create Attendance table.
+
+Fields
+
+id
+
+studentId
+
+teacherId
+
+classId
+
+date
+
+status
+
+remarks
+
+createdAt
+
+updatedAt
+
+Status
+
+Present
+
+Absent
+
+Late
+
+Half Day
+
+Leave
+
+Relationships
+
+Attendance
+
+belongs to Student
+
+belongs to Teacher
+
+belongs to Class
+
+==================================================
+HEADMASTER PAGE
+==================================================
+
+Attendance Dashboard
+
+Cards
+
+Today's Attendance
+
+Present Students
+
+Absent Students
+
+Late Students
+
+Attendance Percentage
+
+Charts
+
+Daily Attendance
+
+Monthly Attendance
+
+Filters
+
+Date
+
+Class
+
+Teacher
+
+Student
+
+Buttons
+
+Export Excel
+
+Export PDF
+
+==================================================
+TEACHER PAGE
+==================================================
+
+Attendance Page
+
+Select
+
+Class
+
+Date
+
+Student List
+
+Each student should have
+
+Present
+
+Absent
+
+Late
+
+Half Day
+
+Leave
+
+Buttons
+
+Save Attendance
+
+Update Attendance
+
+==================================================
+STUDENT PAGE
+==================================================
+
+Attendance Dashboard
+
+Show
+
+Attendance %
+
+Present Days
+
+Absent Days
+
+Late Days
+
+Monthly Calendar
+
+Recent Attendance
+
+==================================================
+SEARCH
+==================================================
+
+Search by
+
+Student
+
+Admission Number
+
+Teacher
+
+Class
+
+Date
+
+==================================================
+REPORTS
+==================================================
+
+Daily Report
+
+Weekly Report
+
+Monthly Report
+
+Yearly Report
+
+Export
+
+PDF
+
+Excel
+
+==================================================
+VALIDATION
+==================================================
+
+One attendance per student per day.
+
+Duplicate attendance not allowed.
+
+Teacher can edit only today's attendance.
+
+Headmaster can edit any attendance.
+
+==================================================
+UI
+==================================================
+
+Government Theme
+
+Primary
+
+#0B2447
+
+Secondary
+
+#D4AF37
+
+Responsive
+
+Desktop
+
+Tablet
+
+Mobile
+
+==================================================
+SECURITY
+==================================================
+
+Teacher can manage only own class attendance.
+
+Students cannot edit attendance.
+
+Headmaster has full access.
+
+==================================================
+TEST DATA
+==================================================
+
+Generate attendance for demo students.
+
+Present
+
+Absent
+
+Late
+
+Leave
+
+==================================================
+VERIFICATION
+==================================================
+
+Verify
+
+Attendance Creation
+
+Attendance Editing
+
+Attendance Reports
+
+Attendance Export
+
+Attendance Percentage
+
+Student Dashboard
+
+Role Permissions
+
+No TypeScript errors
+
+No build errors
+
+Commit Message
+
+Stage 13 - Attendance Management Completed

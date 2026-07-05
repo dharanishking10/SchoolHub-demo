@@ -11,6 +11,7 @@ const STATUS_STYLE: Record<string, { icon: typeof CheckCircle; bg: string; text:
   ABSENT: { icon: XCircle, bg: 'bg-red-100', text: 'text-red-600', label: 'Absent', dot: 'bg-red-500' },
   LEAVE: { icon: CalendarOff, bg: 'bg-purple-100', text: 'text-purple-600', label: 'Leave', dot: 'bg-purple-500' },
   LATE: { icon: Clock, bg: 'bg-amber-100', text: 'text-amber-600', label: 'Late', dot: 'bg-amber-500' },
+  HALF_DAY: { icon: Clock, bg: 'bg-sky-100', text: 'text-sky-600', label: 'Half Day', dot: 'bg-sky-400' },
 }
 
 export default function SAttendance() {

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, XCircle, Clock, CalendarOff, Save, Users, RotateCcw, AlertTriangle, X } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, CalendarOff, Save, Users, RotateCcw, AlertTriangle, X, Minus } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
-type AttStatus = 'PRESENT' | 'ABSENT' | 'LEAVE' | 'LATE'
+type AttStatus = 'PRESENT' | 'ABSENT' | 'LEAVE' | 'LATE' | 'HALF_DAY'
 interface Student { id: number; fullName: string; rollNumber: string; gender: string }
 interface AttRecord { studentId: number; status: AttStatus }
 
@@ -81,6 +81,7 @@ export default function TAttendance() {
   const absent = Object.values(records).filter(s => s === 'ABSENT').length
   const leave = Object.values(records).filter(s => s === 'LEAVE').length
   const late = Object.values(records).filter(s => s === 'LATE').length
+  const halfDay = Object.values(records).filter(s => s === 'HALF_DAY').length
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -125,11 +126,12 @@ export default function TAttendance() {
       {students.length > 0 && (
         <>
           <div className="flex gap-3 mb-4 flex-wrap">
-            <div className="flex-1 min-w-[80px] bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center"><p className="text-xl font-bold text-emerald-700">{present}</p><p className="text-xs text-emerald-600">Present</p></div>
-            <div className="flex-1 min-w-[80px] bg-red-50 border border-red-200 rounded-xl p-3 text-center"><p className="text-xl font-bold text-red-600">{absent}</p><p className="text-xs text-red-500">Absent</p></div>
-            <div className="flex-1 min-w-[80px] bg-purple-50 border border-purple-200 rounded-xl p-3 text-center"><p className="text-xl font-bold text-purple-600">{leave}</p><p className="text-xs text-purple-500">Leave</p></div>
-            <div className="flex-1 min-w-[80px] bg-amber-50 border border-amber-200 rounded-xl p-3 text-center"><p className="text-xl font-bold text-amber-600">{late}</p><p className="text-xs text-amber-500">Late</p></div>
-            <div className="flex-1 min-w-[80px] bg-blue-50 border border-blue-200 rounded-xl p-3 text-center"><p className="text-xl font-bold text-blue-700">{students.length}</p><p className="text-xs text-blue-600">Total</p></div>
+            <div className="flex-1 min-w-[70px] bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center"><p className="text-xl font-bold text-emerald-700">{present}</p><p className="text-xs text-emerald-600">Present</p></div>
+            <div className="flex-1 min-w-[70px] bg-red-50 border border-red-200 rounded-xl p-3 text-center"><p className="text-xl font-bold text-red-600">{absent}</p><p className="text-xs text-red-500">Absent</p></div>
+            <div className="flex-1 min-w-[70px] bg-purple-50 border border-purple-200 rounded-xl p-3 text-center"><p className="text-xl font-bold text-purple-600">{leave}</p><p className="text-xs text-purple-500">Leave</p></div>
+            <div className="flex-1 min-w-[70px] bg-amber-50 border border-amber-200 rounded-xl p-3 text-center"><p className="text-xl font-bold text-amber-600">{late}</p><p className="text-xs text-amber-500">Late</p></div>
+            <div className="flex-1 min-w-[70px] bg-sky-50 border border-sky-200 rounded-xl p-3 text-center"><p className="text-xl font-bold text-sky-600">{halfDay}</p><p className="text-xs text-sky-500">Half Day</p></div>
+            <div className="flex-1 min-w-[70px] bg-blue-50 border border-blue-200 rounded-xl p-3 text-center"><p className="text-xl font-bold text-blue-700">{students.length}</p><p className="text-xs text-blue-600">Total</p></div>
           </div>
 
           {!isReadOnlyForTeacher && (
@@ -173,22 +175,31 @@ export default function TAttendance() {
                     <p className="text-sm font-semibold text-gray-800">{s.fullName}</p>
                     {was && <p className="text-xs text-gray-400">Prev: {was}</p>}
                   </div>
-                  <div className="col-span-5 flex items-center justify-end gap-1.5 flex-wrap">
+                  <div className="col-span-5 flex items-center justify-end gap-1 flex-wrap">
                     <button disabled={isReadOnlyForTeacher} onClick={() => toggle(s.id, 'PRESENT')}
-                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${cur === 'PRESENT' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-emerald-50'}`}>
-                      <CheckCircle size={13} /> P
+                      title="Present"
+                      className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${cur === 'PRESENT' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-emerald-50'}`}>
+                      <CheckCircle size={12} /> P
                     </button>
                     <button disabled={isReadOnlyForTeacher} onClick={() => toggle(s.id, 'ABSENT')}
-                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${cur === 'ABSENT' ? 'bg-red-500 text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-red-50'}`}>
-                      <XCircle size={13} /> A
-                    </button>
-                    <button disabled={isReadOnlyForTeacher} onClick={() => toggle(s.id, 'LEAVE')}
-                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${cur === 'LEAVE' ? 'bg-purple-500 text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-purple-50'}`}>
-                      <CalendarOff size={13} /> Lv
+                      title="Absent"
+                      className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${cur === 'ABSENT' ? 'bg-red-500 text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-red-50'}`}>
+                      <XCircle size={12} /> A
                     </button>
                     <button disabled={isReadOnlyForTeacher} onClick={() => toggle(s.id, 'LATE')}
-                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${cur === 'LATE' ? 'bg-amber-500 text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-amber-50'}`}>
-                      <Clock size={13} /> L
+                      title="Late"
+                      className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${cur === 'LATE' ? 'bg-amber-500 text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-amber-50'}`}>
+                      <Clock size={12} /> Lt
+                    </button>
+                    <button disabled={isReadOnlyForTeacher} onClick={() => toggle(s.id, 'HALF_DAY')}
+                      title="Half Day"
+                      className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${cur === 'HALF_DAY' ? 'bg-sky-500 text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-sky-50'}`}>
+                      <Minus size={12} /> HD
+                    </button>
+                    <button disabled={isReadOnlyForTeacher} onClick={() => toggle(s.id, 'LEAVE')}
+                      title="Leave"
+                      className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${cur === 'LEAVE' ? 'bg-purple-500 text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-purple-50'}`}>
+                      <CalendarOff size={12} /> Lv
                     </button>
                   </div>
                 </motion.div>
@@ -217,7 +228,7 @@ export default function TAttendance() {
                 <button onClick={() => setConfirmOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
               </div>
               <p className="text-sm text-gray-600 mb-4">
-                You are submitting attendance for Std {className}-{section} on {date} — {present} Present, {absent} Absent, {leave} Leave, {late} Late. This will be saved permanently and notified to the Headmaster.
+                You are submitting attendance for Std {className}-{section} on {date} — {present} Present, {absent} Absent, {late} Late, {halfDay} Half Day, {leave} Leave. This will be saved permanently and notified to the Headmaster.
               </p>
               <div className="flex gap-2 justify-end">
                 <button onClick={() => setConfirmOpen(false)} className="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200">Cancel</button>
