@@ -1,0 +1,382 @@
+# STAGE 12 – COMPLETE STUDENT MANAGEMENT MODULE
+
+Continue building the existing EduGov Connect project.
+
+IMPORTANT RULES
+
+- Do NOT recreate the project.
+- Do NOT modify completed modules.
+- Continue from the current codebase.
+- Preserve existing architecture.
+- Everything must compile successfully.
+- Follow the existing Government UI theme.
+
+==================================================
+OBJECTIVE
+==================================================
+
+Build a complete Student Management System.
+
+Hierarchy:
+
+Headmaster
+    ↓
+Creates Teachers
+
+Teacher
+    ↓
+Creates Students
+
+Student
+    ↓
+Can only View
+
+==================================================
+ROLE PERMISSIONS
+==================================================
+
+HEADMASTER
+
+✔ View all students
+✔ Edit any student
+✔ Delete any student
+✔ Reset student password
+✔ Search students
+✔ Filter students
+✔ View student profile
+
+TEACHER
+
+✔ Create students
+✔ Edit only own students
+✔ Delete only own students
+✔ View only own students
+
+STUDENT
+
+✔ View own profile
+✔ View own class
+✔ View attendance
+✔ View marks
+
+NO editing permission.
+
+==================================================
+DATABASE
+==================================================
+
+Create Student table.
+
+Fields
+
+id
+
+admissionNumber
+
+firstName
+
+lastName
+
+gender
+
+dob
+
+bloodGroup
+
+photo
+
+fatherName
+
+motherName
+
+guardianPhone
+
+address
+
+teacherId
+
+classId
+
+username
+
+passwordHash
+
+status
+
+createdAt
+
+updatedAt
+
+Relationships
+
+Student
+
+belongs to Teacher
+
+belongs to Class
+
+==================================================
+HEADMASTER PAGE
+==================================================
+
+Create
+
+Students Page
+
+Features
+
+Dashboard Cards
+
+Total Students
+
+Boys
+
+Girls
+
+Active Students
+
+Buttons
+
+Add Student
+
+Export Excel
+
+Export PDF
+
+Search Box
+
+Filters
+
+Class
+
+Gender
+
+Teacher
+
+Status
+
+Student Table
+
+Photo
+
+Admission No
+
+Student Name
+
+Class
+
+Teacher
+
+Phone
+
+Status
+
+Actions
+
+View
+
+Edit
+
+Delete
+
+==================================================
+TEACHER PAGE
+==================================================
+
+Teacher Dashboard
+
+"My Students"
+
+Button
+
+Add Student
+
+Teacher can
+
+Create
+
+Edit
+
+Delete
+
+only students assigned to them.
+
+==================================================
+ADD STUDENT FORM
+==================================================
+
+Fields
+
+Admission Number
+
+Student Name
+
+Gender
+
+DOB
+
+Blood Group
+
+Father Name
+
+Mother Name
+
+Guardian Phone
+
+Address
+
+Teacher
+
+Class
+
+Photo Upload
+
+Username
+
+Password
+
+Validation
+
+Admission Number required
+
+Student Name required
+
+Class required
+
+Phone validation
+
+No duplicate admission numbers
+
+==================================================
+STUDENT PROFILE PAGE
+==================================================
+
+Show
+
+Student Photo
+
+Admission Number
+
+Full Name
+
+Gender
+
+DOB
+
+Blood Group
+
+Class
+
+Teacher
+
+Parent Details
+
+Address
+
+==================================================
+SEARCH
+==================================================
+
+Search
+
+Admission Number
+
+Student Name
+
+Teacher
+
+Class
+
+==================================================
+FILTER
+==================================================
+
+Filter
+
+Class
+
+Teacher
+
+Gender
+
+Status
+
+==================================================
+UI
+==================================================
+
+Government Theme
+
+Primary
+
+#0B2447
+
+Secondary
+
+#D4AF37
+
+Responsive
+
+Desktop
+
+Tablet
+
+Mobile
+
+==================================================
+SECURITY
+==================================================
+
+Teacher cannot access other teacher students.
+
+Student cannot edit anything.
+
+Headmaster has full access.
+
+==================================================
+TEST DATA
+==================================================
+
+Create demo students
+
+Class 6
+
+Class 7
+
+Class 8
+
+Class 9
+
+Class 10
+
+Class 11
+
+Class 12
+
+==================================================
+VERIFICATION
+==================================================
+
+Verify
+
+Student Creation
+
+Student Editing
+
+Student Delete
+
+Search
+
+Filter
+
+Student Profile
+
+Role Permissions
+
+No TypeScript errors
+
+No build errors
+
+Commit Message
+
+Stage 12 - Student Management Completed

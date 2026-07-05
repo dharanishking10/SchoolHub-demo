@@ -46,9 +46,13 @@ model Teacher {
 model Student {
   id              Int      @id @default(autoincrement())
   admissionNumber String?  @unique
+  firstName       String?
+  lastName        String?
   fullName        String
   gender          String
   dateOfBirth     String?
+  bloodGroup      String?
+  photo           String?
   fatherName      String?
   motherName      String?
   mobile          String?

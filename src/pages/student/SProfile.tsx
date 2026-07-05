@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../../contexts/AuthContext'
 
-interface Profile { fullName: string; admissionNumber?: string; className: string; section: string; rollNumber: string; gender: string; dateOfBirth?: string; fatherName?: string; motherName?: string; mobile?: string; address?: string; username?: string; status: string }
+interface Profile { fullName: string; admissionNumber?: string; className: string; section: string; rollNumber: string; gender: string; dateOfBirth?: string; bloodGroup?: string; fatherName?: string; motherName?: string; mobile?: string; address?: string; username?: string; status: string }
 
 export default function SProfile() {
   const { token } = useAuth()
@@ -24,8 +24,9 @@ export default function SProfile() {
     ]},
     { heading: 'Personal Details', fields: [
       { label: 'Full Name', value: profile.fullName },
-      { label: 'Gender', value: profile.gender },
+      { label: 'Gender', value: profile.gender === 'MALE' ? 'Male' : 'Female' },
       { label: 'Date of Birth', value: profile.dateOfBirth || '—' },
+      { label: 'Blood Group', value: profile.bloodGroup || '—' },
     ]},
     { heading: 'Parent & Contact', fields: [
       { label: 'Father Name', value: profile.fatherName || '—' },
