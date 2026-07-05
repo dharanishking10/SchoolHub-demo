@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { NavLink, useNavigate, Outlet } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { LayoutDashboard, User, ClipboardCheck, BookOpen, FileText, Calendar, Mail, LogOut, Menu, X, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, User, ClipboardCheck, BookOpen, FileText, Calendar, Mail, LogOut, Menu, X, ChevronRight, Megaphone } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import NotificationBell from '../../components/NotificationBell'
 
 const NAV = [
   { to: '/dashboard/student/home', icon: LayoutDashboard, label: 'Dashboard' },
@@ -12,6 +13,7 @@ const NAV = [
   { to: '/dashboard/student/homework', icon: FileText, label: 'Homework' },
   { to: '/dashboard/student/timetable', icon: Calendar, label: 'Timetable' },
   { to: '/dashboard/student/leave', icon: Mail, label: 'Leave Request' },
+  { to: '/dashboard/student/announcements', icon: Megaphone, label: 'Announcements' },
 ]
 
 export default function StudentLayout() {
@@ -98,6 +100,7 @@ export default function StudentLayout() {
             <p className="text-xs text-gray-400 hidden sm:block">🏛️ Tamil Nadu Government — Student Portal</p>
           </div>
           <div className="flex items-center gap-2">
+            <NotificationBell />
             <span className="hidden sm:block text-sm text-gray-600 font-medium">{user?.name || user?.username}</span>
             <div className="w-8 h-8 rounded-full bg-[#0B2447] flex items-center justify-center">
               <span className="text-secondary font-bold text-xs">{(user?.name || 'S')[0]}</span>

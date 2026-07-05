@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { NavLink, useNavigate, Outlet } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { LayoutDashboard, Users, ClipboardCheck, BookOpen, FileText, Calendar, Mail, User, LogOut, Menu, X, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, Users, ClipboardCheck, BookOpen, FileText, Calendar, Mail, User, LogOut, Menu, X, ChevronRight, Megaphone } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import NotificationBell from '../../components/NotificationBell'
+import GlobalSearch from '../../components/GlobalSearch'
 
 const NAV = [
   { to: '/dashboard/teacher/home', icon: LayoutDashboard, label: 'Dashboard' },
@@ -12,6 +14,7 @@ const NAV = [
   { to: '/dashboard/teacher/homework', icon: FileText, label: 'Homework' },
   { to: '/dashboard/teacher/timetable', icon: Calendar, label: 'Timetable' },
   { to: '/dashboard/teacher/leave', icon: Mail, label: 'Leave Requests' },
+  { to: '/dashboard/teacher/announcements', icon: Megaphone, label: 'Announcements' },
   { to: '/dashboard/teacher/profile', icon: User, label: 'My Profile' },
 ]
 
@@ -95,10 +98,12 @@ export default function TeacherLayout() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="bg-white border-b border-gov-border px-4 sm:px-6 py-3 flex items-center gap-4 shrink-0 shadow-sm">
           <button onClick={() => setOpen(true)} className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100"><Menu size={20} /></button>
-          <div className="flex-1">
-            <p className="text-xs text-gray-400 hidden sm:block">🏛️ Tamil Nadu Government — Teacher Portal</p>
+          <GlobalSearch />
+          <div className="flex-1 hidden xl:block">
+            <p className="text-xs text-gray-400">🏛️ Tamil Nadu Government — Teacher Portal</p>
           </div>
           <div className="flex items-center gap-2">
+            <NotificationBell />
             <span className="hidden sm:block text-sm text-gray-600 font-medium">{user?.name || user?.username}</span>
             <div className="w-8 h-8 rounded-full bg-[#0B2447] flex items-center justify-center">
               <span className="text-secondary font-bold text-xs">{(user?.name || 'T')[0]}</span>

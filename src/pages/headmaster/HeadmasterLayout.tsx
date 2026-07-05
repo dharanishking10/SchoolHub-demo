@@ -3,16 +3,23 @@ import { NavLink, useNavigate, Outlet } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Users, GraduationCap, BookOpen,
-  BarChart2, School, Settings, LogOut, Menu, X, ChevronRight
+  BarChart2, School, Settings, LogOut, Menu, X, ChevronRight,
+  ClipboardCheck, Megaphone, Download, History
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import NotificationBell from '../../components/NotificationBell'
+import GlobalSearch from '../../components/GlobalSearch'
 
 const NAV = [
   { to: '/dashboard/headmaster/home', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/dashboard/headmaster/teachers', icon: Users, label: 'Teacher Management' },
   { to: '/dashboard/headmaster/students', icon: GraduationCap, label: 'Student Management' },
   { to: '/dashboard/headmaster/classes', icon: BookOpen, label: 'Classes' },
+  { to: '/dashboard/headmaster/attendance-reports', icon: ClipboardCheck, label: 'Attendance Reports' },
+  { to: '/dashboard/headmaster/announcements', icon: Megaphone, label: 'Announcements' },
   { to: '/dashboard/headmaster/reports', icon: BarChart2, label: 'Reports' },
+  { to: '/dashboard/headmaster/export-center', icon: Download, label: 'Export Center' },
+  { to: '/dashboard/headmaster/audit-log', icon: History, label: 'Audit Log' },
   { to: '/dashboard/headmaster/school', icon: School, label: 'School Profile' },
   { to: '/dashboard/headmaster/settings', icon: Settings, label: 'Settings' },
 ]
@@ -104,10 +111,12 @@ export default function HeadmasterLayout() {
           <button onClick={() => setOpen(true)} className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700">
             <Menu size={20} />
           </button>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-gray-400 hidden sm:block">🏛️ Tamil Nadu Government — EduGov Connect</p>
+          <GlobalSearch />
+          <div className="flex-1 min-w-0 hidden xl:block">
+            <p className="text-xs text-gray-400">🏛️ Tamil Nadu Government — EduGov Connect</p>
           </div>
           <div className="flex items-center gap-2">
+            <NotificationBell />
             <span className="hidden sm:block text-sm text-gray-600 font-medium">{user?.name || user?.username}</span>
             <div className="w-8 h-8 rounded-full bg-[#0B2447] flex items-center justify-center">
               <span className="text-secondary font-bold text-xs">{(user?.name || user?.username || 'H')[0]}</span>

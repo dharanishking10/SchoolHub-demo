@@ -12,6 +12,11 @@ import marksRouter from './routes/marks'
 import homeworkRouter from './routes/homework'
 import timetableRouter from './routes/timetable'
 import leaveRouter from './routes/leave'
+import notificationsRouter from './routes/notifications'
+import announcementsRouter from './routes/announcements'
+import auditLogRouter from './routes/auditlog'
+import searchRouter from './routes/search'
+import exportRouter from './routes/export'
 
 const app = express()
 const PORT = parseInt(process.env.PORT || '3001', 10)
@@ -31,5 +36,10 @@ app.use('/api/marks', marksRouter)
 app.use('/api/homework', homeworkRouter)
 app.use('/api/timetable', timetableRouter)
 app.use('/api/leave', leaveRouter)
+app.use('/api/notifications', notificationsRouter)
+app.use('/api/announcements', announcementsRouter)
+app.use('/api/audit-log', auditLogRouter)
+app.use('/api/search', searchRouter)
+app.use('/api/export', exportRouter)
 
 app.listen(PORT, '0.0.0.0', () => console.log(`🚀 EduGov Connect API on port ${PORT}`))

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'framer-motion'
 import { Users, GraduationCap, BookOpen, TrendingUp, UserPlus, BarChart2, School } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
@@ -11,7 +11,7 @@ interface DashStats {
   recentAdmissions: { id: number; admissionNumber?: string; fullName: string; className: string; section: string; gender: string; createdAt: string }[]
 }
 
-const cardV = {
+const cardV: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.4, ease: 'easeOut' } }),
 }

@@ -11,13 +11,13 @@ const ROLE_DASHBOARD: Record<string, string> = {
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const { login, logoutReason } = useAuth()
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(logoutReason || '')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()

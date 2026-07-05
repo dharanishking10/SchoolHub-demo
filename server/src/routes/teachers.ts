@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { verifyToken, AuthRequest } from '../middleware/auth'
+import { notifyAllOfRole, audit } from '../utils/activityLog'
 
 const router = Router()
 const prisma = new PrismaClient()
@@ -46,6 +47,8 @@ router.post('/', verifyToken, async (req: AuthRequest, res: Response): Promise<v
       select: { id: true, fullName: true, employeeId: true, mobile: true, email: true, subject: true, username: true, status: true, createdAt: true },
     })
     await prisma.activity.create({ data: { type: 'teacher', message: `New teacher ${fullName} (${employeeId}) was added` } })
+    await notifyAllOfRole('HEADMASTER', 'teacher', 'Teacher Added', `New teacher ${fullName} (${employeeId}) was added`)
+    await audit(req.user!.userId, req.user!.name || 'User', req.user!.role, 'Teacher Added', `${fullName} (${employeeId})`)
     res.json({ success: true, data: { teacher, generatedPassword: plainPassword } })
   } catch (err: unknown) {
     const e = err as { code?: string }
@@ -68,13 +71,14 @@ router.put('/:id', verifyToken, async (req: AuthRequest, res: Response): Promise
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })
 
-router.delete('/:id', verifyToken, async (req: Request, res: Response): Promise<void> => {
+router.delete('/:id', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const id = parseInt(req.params.id)
     const teacher = await prisma.teacher.findUnique({ where: { id } })
     if (!teacher) { res.status(404).json({ success: false, message: 'Teacher not found' }); return }
     await prisma.teacher.delete({ where: { id } })
     await prisma.activity.create({ data: { type: 'teacher', message: `Teacher ${teacher.fullName} was removed` } })
+    await audit(req.user!.userId, req.user!.name || 'User', req.user!.role, 'Teacher Deleted', `${teacher.fullName} (${teacher.employeeId})`)
     res.json({ success: true, message: 'Teacher deleted' })
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })

@@ -1,6 +1,7 @@
 import { Router, Response } from 'express'
 import { PrismaClient } from '@prisma/client'
 import { verifyToken, AuthRequest } from '../middleware/auth'
+import { notify, audit } from '../utils/activityLog'
 
 const router = Router()
 const prisma = new PrismaClient()
@@ -69,6 +70,8 @@ router.post('/', verifyToken, async (req: AuthRequest, res: Response): Promise<v
       update: { marksObtained, totalMarks, grade, markedBy: req.user!.userId },
       create: { studentId, subject, examName, marksObtained, totalMarks, grade, markedBy: req.user!.userId },
     })
+    await notify(studentId, 'STUDENT', 'marks', 'Marks Published', `Your ${subject} marks for ${examName} have been published (${marksObtained}/${totalMarks}, Grade ${grade})`)
+    await audit(req.user!.userId, req.user!.name || 'User', req.user!.role, 'Marks Updated', `${subject} - ${examName} for student #${studentId}`)
     res.json({ success: true, data: mark })
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })

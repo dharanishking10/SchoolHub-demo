@@ -1,6 +1,7 @@
 import { Router, Response } from 'express'
 import { PrismaClient } from '@prisma/client'
 import { verifyToken, AuthRequest } from '../middleware/auth'
+import { notifyClass, audit } from '../utils/activityLog'
 
 const router = Router()
 const prisma = new PrismaClient()
@@ -39,6 +40,8 @@ router.post('/', verifyToken, async (req: AuthRequest, res: Response): Promise<v
     if (!className || !section || !subject || !title || !dueDate) { res.status(400).json({ success: false, message: 'Required fields missing' }); return }
     const teacherId = req.user!.role === 'TEACHER' ? req.user!.userId : 1
     const hw = await prisma.homework.create({ data: { teacherId, className, section, subject, title, description: description || null, dueDate, status: 'ACTIVE' } })
+    await notifyClass(className, section, 'homework', 'New Homework', `${subject}: ${title} (Due ${dueDate})`)
+    await audit(req.user!.userId, req.user!.name || 'User', req.user!.role, 'Homework Created', `${subject} - ${title} for ${className}-${section}`)
     res.json({ success: true, data: hw })
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })

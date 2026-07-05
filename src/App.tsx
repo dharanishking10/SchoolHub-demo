@@ -12,6 +12,10 @@ import ClassManagement from './pages/headmaster/ClassManagement'
 import Reports from './pages/headmaster/Reports'
 import SchoolProfile from './pages/headmaster/SchoolProfile'
 import HMSettings from './pages/headmaster/HMSettings'
+import AttendanceReports from './pages/headmaster/AttendanceReports'
+import HMAnnouncements from './pages/headmaster/Announcements'
+import AuditLog from './pages/headmaster/AuditLog'
+import ExportCenter from './pages/headmaster/ExportCenter'
 
 import TeacherLayout from './pages/teacher/TeacherLayout'
 import TDashboard from './pages/teacher/TDashboard'
@@ -22,6 +26,7 @@ import THomework from './pages/teacher/THomework'
 import TTimetable from './pages/teacher/TTimetable'
 import TLeave from './pages/teacher/TLeave'
 import TProfile from './pages/teacher/TProfile'
+import TAnnouncements from './pages/teacher/TAnnouncements'
 
 import StudentLayout from './pages/student/StudentLayout'
 import SDashboard from './pages/student/SDashboard'
@@ -31,6 +36,7 @@ import SMarks from './pages/student/SMarks'
 import SHomework from './pages/student/SHomework'
 import STimetable from './pages/student/STimetable'
 import SLeave from './pages/student/SLeave'
+import SAnnouncements from './pages/student/SAnnouncements'
 
 function App() {
   return (
@@ -46,7 +52,11 @@ function App() {
           <Route path="teachers" element={<TeacherManagement />} />
           <Route path="students" element={<StudentManagement />} />
           <Route path="classes" element={<ClassManagement />} />
+          <Route path="attendance-reports" element={<AttendanceReports />} />
+          <Route path="announcements" element={<HMAnnouncements />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="export-center" element={<ExportCenter />} />
+          <Route path="audit-log" element={<AuditLog />} />
           <Route path="school" element={<SchoolProfile />} />
           <Route path="settings" element={<HMSettings />} />
         </Route>
@@ -61,6 +71,7 @@ function App() {
           <Route path="homework" element={<THomework />} />
           <Route path="timetable" element={<TTimetable />} />
           <Route path="leave" element={<TLeave />} />
+          <Route path="announcements" element={<TAnnouncements />} />
           <Route path="profile" element={<TProfile />} />
         </Route>
 
@@ -74,6 +85,7 @@ function App() {
           <Route path="homework" element={<SHomework />} />
           <Route path="timetable" element={<STimetable />} />
           <Route path="leave" element={<SLeave />} />
+          <Route path="announcements" element={<SAnnouncements />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />

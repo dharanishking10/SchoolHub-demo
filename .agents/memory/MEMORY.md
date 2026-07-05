@@ -1,0 +1,1 @@
+- [EduGov Connect conventions](edugov-connect-conventions.md) — CSV-only export, notify/audit hook pattern, JWT-based session security approach

@@ -1,6 +1,7 @@
 import { Router, Response } from 'express'
 import { PrismaClient } from '@prisma/client'
 import { verifyToken, AuthRequest } from '../middleware/auth'
+import { notify, audit } from '../utils/activityLog'
 
 const router = Router()
 const prisma = new PrismaClient()
@@ -39,18 +40,32 @@ router.get('/summary', verifyToken, async (req: AuthRequest, res: Response): Pro
     const present = await prisma.attendance.count({ where: { studentId: sid, status: 'PRESENT' } })
     const absent = await prisma.attendance.count({ where: { studentId: sid, status: 'ABSENT' } })
     const late = await prisma.attendance.count({ where: { studentId: sid, status: 'LATE' } })
-    const recent = await prisma.attendance.findMany({ where: { studentId: sid }, orderBy: { date: 'desc' }, take: 30 })
+    const leave = await prisma.attendance.count({ where: { studentId: sid, status: 'LEAVE' } })
+    const recent = await prisma.attendance.findMany({ where: { studentId: sid }, orderBy: { date: 'desc' }, take: 60 })
+    const today = new Date().toISOString().split('T')[0]
+    const todayRecord = recent.find(r => r.date === today)
 
-    res.json({ success: true, data: { total: all, present, absent, late, percentage: all > 0 ? Math.round((present / all) * 100) : 0, recent } })
+    res.json({ success: true, data: { total: all, present, absent, late, leave, percentage: all > 0 ? Math.round((present / all) * 100) : 0, recent, today: todayRecord?.status || null } })
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })
 
-// POST /api/attendance — bulk mark (teacher)
+const VALID_STATUSES = ['PRESENT', 'ABSENT', 'LEAVE', 'LATE']
+
+// POST /api/attendance — bulk mark (teacher/headmaster)
 router.post('/', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (req.user!.role === 'STUDENT') { res.status(403).json({ success: false, message: 'Not allowed' }); return }
     const { date, className, section, records } = req.body as { date: string; className: string; section: string; records: { studentId: number; status: string }[] }
     if (!date || !className || !section || !records?.length) { res.status(400).json({ success: false, message: 'date, className, section, records required' }); return }
+
+    const today = new Date().toISOString().split('T')[0]
+    if (req.user!.role === 'TEACHER' && date !== today) {
+      res.status(403).json({ success: false, message: 'Teachers can only mark or edit today\'s attendance. Contact the Headmaster to edit past records.' })
+      return
+    }
+
+    const invalid = records.find(r => !r.studentId || !VALID_STATUSES.includes(r.status))
+    if (invalid) { res.status(400).json({ success: false, message: 'Every student must have a valid status (Present, Absent, Leave, Late)' }); return }
 
     const results = await Promise.all(records.map(r =>
       prisma.attendance.upsert({
@@ -59,8 +74,51 @@ router.post('/', verifyToken, async (req: AuthRequest, res: Response): Promise<v
         create: { studentId: r.studentId, date, status: r.status, className, section, markedBy: req.user!.userId },
       })
     ))
+
+    await audit(req.user!.userId, req.user!.name || 'User', req.user!.role, 'Attendance Submitted', `${className}-${section} on ${date} (${records.length} students)`)
+
+    const headmasters = await prisma.user.findMany({ where: { role: 'HEADMASTER' }, select: { id: true } })
+    await Promise.all(headmasters.map(h => notify(h.id, 'HEADMASTER', 'attendance', 'Attendance Submitted', `Attendance for Std ${className}-${section} submitted for ${date} by ${req.user!.name || 'Teacher'}`)))
+
+    const absentees = records.filter(r => r.status === 'ABSENT')
+    await Promise.all(absentees.map(r => notify(r.studentId, 'STUDENT', 'attendance_warning', 'Marked Absent', `You were marked absent on ${date}.`)))
+
     res.json({ success: true, data: results })
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
+})
+
+// GET /api/attendance/reports?className=&section=&month=&teacherId= (headmaster reports)
+router.get('/reports', verifyToken, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (req.user!.role !== 'HEADMASTER') { res.status(403).json({ success: false, message: 'Not allowed' }); return }
+    const { className, section, month } = req.query as Record<string, string>
+    const where: Record<string, unknown> = {}
+    if (className) where.className = className
+    if (section) where.section = section
+    if (month) where.date = { startsWith: month }
+
+    const records = await prisma.attendance.findMany({
+      where,
+      include: { student: { select: { id: true, fullName: true, rollNumber: true, className: true, section: true } } },
+      orderBy: [{ date: 'desc' }],
+    })
+
+    const byClass: Record<string, { present: number; absent: number; leave: number; late: number; total: number }> = {}
+    const byStudent: Record<number, { name: string; rollNumber: string; present: number; absent: number; leave: number; late: number; total: number }> = {}
+
+    for (const r of records) {
+      const classKey = `${r.className}-${r.section}`
+      byClass[classKey] = byClass[classKey] || { present: 0, absent: 0, leave: 0, late: 0, total: 0 }
+      byClass[classKey].total++
+      byClass[classKey][r.status.toLowerCase() as 'present' | 'absent' | 'leave' | 'late']++
+
+      byStudent[r.studentId] = byStudent[r.studentId] || { name: r.student.fullName, rollNumber: r.student.rollNumber, present: 0, absent: 0, leave: 0, late: 0, total: 0 }
+      byStudent[r.studentId].total++
+      byStudent[r.studentId][r.status.toLowerCase() as 'present' | 'absent' | 'leave' | 'late']++
+    }
+
+    res.json({ success: true, data: { records, byClass, byStudent } })
+  } catch (e) { console.error(e); res.status(500).json({ success: false, message: 'Server error' }) }
 })
 
 export default router

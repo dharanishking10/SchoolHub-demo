@@ -1,6 +1,7 @@
 import { Router, Response } from 'express'
 import { PrismaClient } from '@prisma/client'
 import { verifyToken, AuthRequest } from '../middleware/auth'
+import { notify, notifyAllOfRole, audit } from '../utils/activityLog'
 
 const router = Router()
 const prisma = new PrismaClient()
@@ -29,6 +30,7 @@ router.post('/', verifyToken, async (req: AuthRequest, res: Response): Promise<v
     const { fromDate, toDate, reason } = req.body
     if (!fromDate || !toDate || !reason) { res.status(400).json({ success: false, message: 'All fields required' }); return }
     const request = await prisma.leaveRequest.create({ data: { studentId: req.user!.userId, fromDate, toDate, reason } })
+    await notifyAllOfRole('HEADMASTER', 'leave', 'New Leave Request', `${req.user!.name || 'A student'} applied for leave (${fromDate} to ${toDate})`)
     res.json({ success: true, data: request })
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })
@@ -42,6 +44,8 @@ router.put('/:id', verifyToken, async (req: AuthRequest, res: Response): Promise
       where: { id: parseInt(req.params.id) },
       data: { status, teacherComment: teacherComment || null, reviewedBy: req.user!.userId },
     })
+    await notify(updated.studentId, 'STUDENT', 'leave', `Leave Request ${status === 'APPROVED' ? 'Approved' : 'Rejected'}`, `Your leave request (${updated.fromDate} to ${updated.toDate}) was ${status?.toLowerCase()}.`)
+    await audit(req.user!.userId, req.user!.name || 'User', req.user!.role, 'Leave Reviewed', `Leave #${updated.id} marked ${status}`)
     res.json({ success: true, data: updated })
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })

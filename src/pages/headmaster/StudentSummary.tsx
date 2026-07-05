@@ -117,7 +117,7 @@ export default function StudentSummary() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af' }} />
                 <YAxis domain={[60, 100]} tick={{ fontSize: 11, fill: '#9ca3af' }} />
-                <Tooltip formatter={(v: number) => [`${v}%`, 'Attendance']} contentStyle={{ borderRadius: 10, fontSize: 12 }} />
+                <Tooltip formatter={(v) => [`${v}%`, 'Attendance']} contentStyle={{ borderRadius: 10, fontSize: 12 }} />
                 <Area type="monotone" dataKey="pct" stroke="#0B2447" strokeWidth={2} fill="url(#attGrad)" dot={{ fill: '#D4AF37', strokeWidth: 2, r: 4 }} />
               </AreaChart>
             </ResponsiveContainer>

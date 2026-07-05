@@ -2,6 +2,7 @@ import { Router, Response } from 'express'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { verifyToken, AuthRequest } from '../middleware/auth'
+import { notifyAllOfRole, audit } from '../utils/activityLog'
 
 const router = Router()
 const prisma = new PrismaClient()
@@ -78,6 +79,8 @@ router.post('/', verifyToken, async (req: AuthRequest, res: Response): Promise<v
       select: { id: true, admissionNumber: true, fullName: true, gender: true, className: true, section: true, rollNumber: true, username: true, status: true, createdAt: true },
     })
     await prisma.activity.create({ data: { type: 'student', message: `New student ${fullName} admitted (${admissionNumber})` } })
+    await notifyAllOfRole('HEADMASTER', 'student', 'Student Added', `New student ${fullName} admitted (${admissionNumber})`)
+    await audit(req.user!.userId, req.user!.name || 'User', req.user!.role, 'Student Added', `${fullName} (${admissionNumber})`)
     res.json({ success: true, data: { student, generatedPassword: plainPassword, generatedUsername: username } })
   } catch (err: unknown) {
     const e = err as { code?: string }
@@ -109,6 +112,7 @@ router.delete('/:id', verifyToken, async (req: AuthRequest, res: Response): Prom
     if (!student) { res.status(404).json({ success: false, message: 'Student not found' }); return }
     await prisma.student.delete({ where: { id } })
     await prisma.activity.create({ data: { type: 'student', message: `Student ${student.fullName} removed from records` } })
+    await audit(req.user!.userId, req.user!.name || 'User', req.user!.role, 'Student Deleted', `${student.fullName} (${student.admissionNumber})`)
     res.json({ success: true, message: 'Student deleted' })
   } catch { res.status(500).json({ success: false, message: 'Server error' }) }
 })

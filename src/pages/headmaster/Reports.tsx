@@ -109,7 +109,7 @@ export default function Reports() {
           <ChartCard title="Student Gender Distribution" icon={GraduationCap}>
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
-                <Pie data={genderData} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
+                <Pie data={genderData} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(((percent as number) || 0) * 100).toFixed(0)}%`} labelLine={false}>
                   {genderData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                 </Pie>
                 <Legend iconType="circle" iconSize={10} wrapperStyle={{ fontSize: 12 }} />
@@ -133,7 +133,7 @@ export default function Reports() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af' }} />
                 <YAxis domain={[60, 100]} tick={{ fontSize: 11, fill: '#9ca3af' }} />
-                <Tooltip formatter={(v: number) => [`${v}%`, 'Attendance']} contentStyle={{ borderRadius: 10, fontSize: 12 }} />
+                <Tooltip formatter={(v) => [`${v}%`, 'Attendance']} contentStyle={{ borderRadius: 10, fontSize: 12 }} />
                 <Area type="monotone" dataKey="pct" stroke="#D4AF37" strokeWidth={2.5} fill="url(#rptGrad)" dot={{ fill: '#0B2447', r: 4, strokeWidth: 0 }} />
               </AreaChart>
             </ResponsiveContainer>
