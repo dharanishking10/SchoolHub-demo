@@ -1,0 +1,204 @@
+Analyze my existing EduGov Connect project completely.
+
+Do NOT modify any code.
+
+Do NOT create any new files.
+
+Do NOT implement any new features.
+
+Only inspect the entire project and generate a complete project analysis report.
+
+The report should include:
+
+==================================================
+PROJECT OVERVIEW
+==================================================
+
+• Project Name
+• Current Version
+• Tech Stack
+• Frontend Technologies
+• Backend Technologies
+• Database
+• Authentication
+• Libraries Used
+
+==================================================
+PROJECT STRUCTURE
+==================================================
+
+List every folder and file.
+
+Explain the purpose of each folder.
+
+==================================================
+IMPLEMENTED MODULES
+==================================================
+
+List every completed module.
+
+Examples:
+
+• Authentication
+• Dashboard
+• Student Management
+• Teacher Management
+• Attendance
+• Marks
+• Timetable
+• School Profile
+• Government Schemes
+• Reports
+• Settings
+• Notifications
+• Complaints
+
+Mention whether each module is:
+
+✅ Completed
+
+🟡 Partially Completed
+
+❌ Not Implemented
+
+==================================================
+PAGES
+==================================================
+
+List every page.
+
+Mention route path.
+
+Mention purpose.
+
+==================================================
+COMPONENTS
+==================================================
+
+List all reusable components.
+
+Explain where they are used.
+
+==================================================
+LAYOUTS
+==================================================
+
+List all layouts.
+
+==================================================
+ROUTES
+==================================================
+
+List every route.
+
+Mention if protected.
+
+==================================================
+DATABASE
+==================================================
+
+List every Prisma model.
+
+Explain relationships.
+
+==================================================
+API
+==================================================
+
+List every backend API.
+
+Group by module.
+
+==================================================
+AUTHENTICATION
+==================================================
+
+Explain authentication flow.
+
+==================================================
+ROLE SYSTEM
+==================================================
+
+Explain every role.
+
+Headmaster
+
+Teacher
+
+Student
+
+Parent
+
+Admin
+
+Mention permissions.
+
+==================================================
+REPORTS
+==================================================
+
+List PDF reports.
+
+Excel exports.
+
+QR code features.
+
+==================================================
+UI
+==================================================
+
+Explain
+
+Theme
+
+Sidebar
+
+Header
+
+Footer
+
+Responsive Design
+
+==================================================
+FEATURE STATUS
+==================================================
+
+Generate a checklist.
+
+Completed
+
+In Progress
+
+Pending
+
+==================================================
+PROJECT STATISTICS
+==================================================
+
+Estimate:
+
+Number of Pages
+
+Number of Components
+
+Number of APIs
+
+Number of Database Tables
+
+Number of Routes
+
+==================================================
+NEXT RECOMMENDED STAGE
+==================================================
+
+Recommend what should be built next based on the current project.
+
+==================================================
+IMPORTANT
+==================================================
+
+Do NOT change the project.
+
+Do NOT generate code.
+
+Only inspect and produce a detailed analysis report.
