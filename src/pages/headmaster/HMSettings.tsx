@@ -53,7 +53,7 @@ export default function HMSettings() {
       icon: Monitor, title: 'System Information',
       content: (
         <div className="space-y-2.5">
-          {[['Platform', 'EduGov Connect v1.0'], ['Stage', 'Stage 3 – Headmaster Dashboard'], ['Academic Year', '2025-2026'], ['Government', 'Tamil Nadu, India']].map(([l, v]) => (
+          {[['Platform', 'EduGov Connect v1.0'], ['Academic Year', '2025-2026'], ['Government', 'Tamil Nadu, India']].map(([l, v]) => (
             <div key={l} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
               <span className="text-sm text-gray-500">{l}</span>
               <span className="text-sm font-semibold text-gray-700">{v}</span>

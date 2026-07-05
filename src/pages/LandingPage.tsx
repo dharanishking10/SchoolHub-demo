@@ -131,23 +131,26 @@ export default function LandingPage() {
 
       {/* Main Header */}
       <header className="bg-gradient-to-b from-[#0B2447] to-[#122d5a] shadow-xl">
-        <div className="max-w-6xl mx-auto px-4 py-5">
-          <div className="flex flex-col sm:flex-row items-center gap-5">
+        <div className="max-w-6xl mx-auto px-4 py-6">
+          <div className="flex flex-col items-center gap-3 text-center">
 
-            {/* Emblem */}
+            {/* Tamil Nadu Government Emblem */}
             <div className="shrink-0">
-              <div className="w-20 h-20 bg-[#D4AF37]/10 border-2 border-[#D4AF37]/40 rounded-full flex items-center justify-center shadow-lg">
-                <div className="text-center">
-                  <div className="text-3xl leading-none">🏛️</div>
-                  <div className="text-[#D4AF37] text-[8px] font-bold mt-0.5 tracking-widest">GOVT</div>
-                </div>
-              </div>
+              <img
+                src="/tn-emblem.svg"
+                alt="Tamil Nadu Government Emblem"
+                className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-lg"
+                style={{ filter: 'drop-shadow(0 2px 8px rgba(212,175,55,0.3))' }}
+              />
             </div>
 
             {/* Title block */}
-            <div className="text-center sm:text-left flex-1">
-              <p className="text-[#D4AF37] text-xs font-semibold tracking-[0.2em] uppercase mb-1">
+            <div className="text-center">
+              <p className="text-[#D4AF37] text-xs sm:text-sm font-bold tracking-[0.25em] uppercase mb-0.5">
                 Government of Tamil Nadu
+              </p>
+              <p className="text-[#D4AF37]/80 text-xs font-semibold tracking-[0.15em] uppercase mb-2">
+                Department of School Education
               </p>
               <h1 className="text-white text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight">
                 EduGov Connect
@@ -155,17 +158,9 @@ export default function LandingPage() {
               <p className="text-blue-200 text-sm font-medium mt-1">
                 Tamil Nadu Government School Management System
               </p>
-              <p className="text-blue-300/70 text-xs mt-0.5">
+              <p className="text-blue-300/60 text-xs mt-0.5">
                 தமிழ்நாடு அரசு பள்ளி மேலாண்மை அமைப்பு
               </p>
-            </div>
-
-            {/* Right logo */}
-            <div className="shrink-0 hidden sm:flex flex-col items-center gap-1">
-              <div className="w-14 h-14 bg-white/10 border border-white/20 rounded-xl flex items-center justify-center">
-                <span className="text-white font-black text-xl">EC</span>
-              </div>
-              <span className="text-white/40 text-[10px] font-medium">Stage 10A</span>
             </div>
           </div>
         </div>
