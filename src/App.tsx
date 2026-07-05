@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
+import LandingPage from './pages/LandingPage'
 import Unauthorized from './pages/Unauthorized'
 
 import HeadmasterLayout from './pages/headmaster/HeadmasterLayout'
@@ -90,8 +91,8 @@ function App() {
           <Route path="announcements" element={<SAnnouncements />} />
         </Route>
 
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
   )
